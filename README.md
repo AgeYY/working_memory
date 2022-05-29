@@ -15,7 +15,7 @@ Please find *./bin/PersiTransWM.ipynb* for reproducing main figures, and *./bin/
 
 # Comment
 
-There are many hyperparameters in /core/default.py to control when the training stops, including stop\_cost, stop\_noise\_error, stop\_xxx etc. We set them to be very large so that they are not used in practice. As a result, the training always stops after achieving the min\_trials (2e5) when we observed relatively stable loss function and working memory error.
+There are many hyperparameters in /core/default.py that are about stop training conditions, including stop\_cost, stop\_noise\_error, stop\_xxx etc. We set them properly so that most of them are not used in practice. As a result, the training always stops after achieving the min\_trials (2e5) when we observed a relatively stable working memory error.
 
 # Acknowledgement
 
