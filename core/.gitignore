@@ -1,3 +1,6 @@
 __pycache__/
 model_local/
 model_test/
+.ian*
+*.pyc
+__pycache__/

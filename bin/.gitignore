@@ -1,3 +1,6 @@
 server_command.sh
 server_command.py
+*.pyc
 output
+.ipynb_checkpoints/
+__pycache__/
