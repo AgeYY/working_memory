@@ -57,7 +57,7 @@ initial_type='delay_ring'
 milestones = [6000, 12000, 18000]
 batch_size_fp = 500
 sigma_init = 0 # Specify the noise adding on initial searching points
-prod_interval_search = 0
+prod_interval_search = 100
 
 def gen_data_func():
     ########## Points on the ring
