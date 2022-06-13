@@ -81,4 +81,4 @@ ax.set_xlabel('PC')
 
 fig.savefig('./figs/fig_collect/pca_explained.pdf', format='pdf')
 
-plt.show()
+#plt.show()

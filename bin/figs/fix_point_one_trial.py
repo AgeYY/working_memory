@@ -120,4 +120,4 @@ fig_stim.savefig(fig_out_path + "_stim.pdf", format='pdf')
 #
 #fig.savefig('./figs/fig_collect/traj_fix_3.pdf', format='pdf')
 
-plt.show()
+#plt.show()

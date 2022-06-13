@@ -90,4 +90,4 @@ ax.set_xlabel('Neurons')
 ax.set_ylabel('Input color (deg)')
 
 fig.savefig('./figs/fig_collect/tuning_' + label_name + '.pdf', format='pdf')
-plt.show()
+#plt.show()

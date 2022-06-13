@@ -123,7 +123,7 @@ ax_ddm.set_ylabel('')
 
 fig.savefig(out_fig_path, format='pdf')
 
-plt.show()
+#plt.show()
 
 #################### Plot the report distribution
 #def plot_report_dist(report_dist, add_common_color=False):

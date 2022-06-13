@@ -155,4 +155,4 @@ plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useMathText=True)
 
 fig.savefig(mse_out_path, format='pdf')
 
-plt.show()
+#plt.show()

@@ -141,4 +141,4 @@ fig.savefig(out_dir, format='png', dpi=900)
 #out_dir = out_dir[:-3] + 'eps'
 #fig.savefig(out_dir, format='eps')
 
-plt.show()
+#plt.show()

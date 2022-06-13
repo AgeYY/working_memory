@@ -163,7 +163,7 @@ dire_df = pd.read_csv(out_path_bias)
 fig, ax = plot_bias(dire_df['target_common_s'], dire_df['bias_s'], dire_df['target_common_l'], dire_df['bias_l'])
 fig.savefig('./figs/fig_collect/bias_rnn.pdf', format='pdf')
 #ax.set_xlabel('Target color (deg)')
-plt.show()
+#plt.show()
 
 ## unbias_rnn, i.e. models trained with uniform distribution
 dire_df = pd.read_csv(out_path_unbias)
@@ -172,4 +172,4 @@ fig, ax = plot_bias(dire_df['target_common_s'], dire_df['bias_s'], dire_df['targ
 #ax.set_xlabel('Target color (deg)')
 #ax.set_ylabel('Report - Target (deg)')
 fig.savefig('./figs/fig_collect/unbias_rnn.pdf', format='pdf')
-plt.show()
+#plt.show()

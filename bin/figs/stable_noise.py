@@ -98,10 +98,10 @@ if rank == 0:
     noise = data['noise']
     print('median = {} \t mean = {} \n'.format(np.median(noise), np.mean(noise)))
     plt.hist(noise)
-    plt.show()
+    #plt.show()
 
     color = data['rnn_color']; drift = data['rnn_drift'];
 
     plt.figure(1)
     plt.plot(color, drift)
-    plt.show()
+    #plt.show()

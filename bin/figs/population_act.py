@@ -132,7 +132,7 @@ ax.set_xlabel('Neurons')
 ax.set_ylabel('Input color (deg)')
 
 fig.savefig('./figs/fig_collect/tuning.pdf', format='pdf')
-plt.show()
+#plt.show()
 
 firing_rate_pped = pd.read_csv('./figs/fig_data/pop_act.csv', header=None).to_numpy()
 label = pd.read_csv('./figs/fig_data/bump_label.csv', header=None).to_numpy()
@@ -182,4 +182,4 @@ cbar = fig.colorbar(im)
 cbar.ax.tick_params(direction='out', length=3)
 
 fig.savefig('./figs/fig_collect/bump.pdf', format='pdf')
-plt.show()
+#plt.show()

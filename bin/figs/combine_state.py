@@ -172,4 +172,4 @@ ax.tick_params(
 #fig.savefig('./figs/fig_collect/combine.pdf', format='pdf')
 fig.savefig(out_fig_path, format='pdf')
 
-plt.show()
+#plt.show()

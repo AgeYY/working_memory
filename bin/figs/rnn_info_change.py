@@ -99,4 +99,4 @@ plot_color_traj(rnn_time, rnn_colors, ax_rnn)
 plt.legend()
 
 fig.savefig(out_fig_path, format='pdf')
-plt.show()
+#plt.show()

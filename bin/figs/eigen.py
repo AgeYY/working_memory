@@ -122,7 +122,7 @@ for key in key_list:
 
 plt.figure()
 plt.plot(range(len(n_att)), n_att)
-plt.show()
+#plt.show()
 
 data_real = data_to_sns(data, kwd_list=['real', 'att'])
 data_imag = data_to_sns(data, kwd_list=['imag', 'att'])
@@ -132,13 +132,13 @@ import seaborn as sns
 ax = sns.boxplot(x='name', y='val', data=data_real)
 ax.set_xlabel('Sigma in the prior distribution')
 ax.set_ylabel('The real component of largest eigenvalue in Attractors')
-plt.show()
+#plt.show()
 ax = sns.boxplot(x='name', y='val', data=data_imag)
-plt.show()
+#plt.show()
 ax = sns.boxplot(x='name', y='val', data=data_sad_real)
-plt.show()
+#plt.show()
 ax = sns.boxplot(x='name', y='val', data=data_sad_imag)
-plt.show()
+#plt.show()
 
 #
 #data_sns = {'sig': [], 'real': [], 'imag': []}

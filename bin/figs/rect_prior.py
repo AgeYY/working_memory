@@ -103,4 +103,4 @@ sigma_s = 10.0 # degree
 file_handle = 'rec_10'
 fig_s_10, ax_s_10, fig_n_10, ax_n_10 = plot_prior(sigma_s, file_handle)
 
-plt.show()
+#plt.show()

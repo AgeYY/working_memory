@@ -124,4 +124,4 @@ _, ax_stim = mplot.pca_2d_plot(start_time=sub.epochs['stim1'][0] - 1, end_time=s
 plt.axis('off')
 fig_stim.savefig(fig_out_path + "_stim.pdf", format='pdf')
 
-plt.show()
+#plt.show()

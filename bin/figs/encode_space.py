@@ -184,4 +184,4 @@ for cc_i in common_color:
 
 fig.savefig(out_dir + '_density.pdf', format='pdf')
 
-plt.show()
+#plt.show()

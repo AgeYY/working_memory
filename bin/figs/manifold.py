@@ -76,7 +76,7 @@ for epoch_name in ['stim1', 'interval', 'go_cue', 'response', 'all']:
     ax.set_zticks([])
 
     fig.savefig('./figs/fig_collect/manifold_' + epoch_name + '.pdf', format='pdf')
-    plt.show()
+    #plt.show()
 
 fig = plt.figure(figsize = (5, 3))
 axext = fig.add_subplot(111, projection='3d')
@@ -84,4 +84,4 @@ _, ax = mplot.pca_3d_plot(start_time=sub['epochs']['interval'][1], end_time=sub[
 ax.set_xticks([])
 ax.set_yticks([])
 ax.set_zticks([])
-plt.show()
+#plt.show()

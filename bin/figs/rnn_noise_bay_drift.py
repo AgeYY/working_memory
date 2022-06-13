@@ -129,8 +129,6 @@ if rank == 0:
 
     rnn_color, rnn_drift, bay_drift = np.array(data['rnn_color']), np.array(data['rnn_drift']), np.array(data['bay_drift'])
 
-    ##################### Test end
-
     rnn_color, rnn_drift, bay_drift = rad2deg(rnn_color, shift=True), rad2deg(rnn_drift), rad2deg(bay_drift)
     c_center = rad2deg(c_center, shift=True)
     ########## Plot curves
@@ -141,7 +139,7 @@ if rank == 0:
 
     plt.figure()
     plt.scatter(rnn_color, rnn_drift)
-    plt.show()
+    #plt.show()
 
     sns.set_theme()
     sns.set_style("ticks")
@@ -166,13 +164,13 @@ if rank == 0:
         ax.scatter(cc_i, 0, color = 'red', s=100)
         
     plt.legend()
-    plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useMathText=True)
+    plt.ticklabel_format(axis='y', style='sci', useMathText=True)
+
+    fig.savefig('./figs/fig_collect/' + fig_name, format='pdf')
 
     plt.figure(2)
     noise = np.array(data['noise'])
     print('median = {} \t mean = {} \n'.format(np.median(np.abs(noise)), np.mean(np.abs(noise))))
     plt.hist(noise, bins=20)
 
-    fig.savefig('./figs/fig_collect/' + fig_name, format='pdf')
-
-    plt.show()
+    #plt.show()

@@ -79,4 +79,4 @@ for epoch_name in ['stim1', 'interval', 'go_cue', 'response', 'all']:
     ax.set_zticks([])
 
     fig.savefig('./figs/fig_collect/manifold_noise_' + epoch_name + '_' + label_name + '.pdf', format='pdf')
-    plt.show()
+    #plt.show()

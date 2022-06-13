@@ -209,4 +209,4 @@ plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useMathText=True)
 
 fig_inset.savefig('./figs/fig_collect/speed_dis_all_inset.pdf', format='pdf')
 
-plt.show()
+#plt.show()

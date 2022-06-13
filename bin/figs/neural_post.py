@@ -117,4 +117,4 @@ ax_rnn.imshow(posterior_table)
 #plot_color_traj(rnn_time, rnn_colors, ax_rnn)
 
 fig.savefig(out_fig_path, format='pdf')
-plt.show()
+#plt.show()

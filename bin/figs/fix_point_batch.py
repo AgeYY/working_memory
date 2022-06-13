@@ -54,7 +54,7 @@ n_epochs = 20000
 #n_epochs = 1000
 
 lr=1
-prod_interval_search = 0
+prod_interval_search = 100
 speed_thre = None # speed lower than this we consider it as fixpoints, slow points otherwise
 milestones = [6000, 12000, 18000]
 alpha=0.7

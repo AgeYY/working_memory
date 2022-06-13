@@ -70,4 +70,4 @@ manifold_epoch_name('interval')
 manifold_epoch_name('go_cue')
 manifold_epoch_name('response')
 
-plt.show()
+#plt.show()

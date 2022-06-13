@@ -65,4 +65,4 @@ for c_t in c_time:
 
 ax.tick_params(direction='out')
 fig.savefig('./figs/fig_collect/neural_activity' + file_label + '.pdf', format='pdf')
-plt.show()
+#plt.show()

@@ -170,7 +170,7 @@ if rank==0:
 
     plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useMathText=True)
     fig.savefig(fig_out_path_att, format='pdf')
-    plt.show()
+    #plt.show()
 
     fig, (ax1, ax2) = plt.subplots(ncols=2, nrows=1, sharey=True, gridspec_kw={'width_ratios': [3, 1]}, figsize=(3,3))
     sns.lineplot(x='name', y='val', data=data_sad_real, err_style='bars', marker='o', ci=ci, estimator=np.mean, ax=ax1)
@@ -183,6 +183,6 @@ if rank==0:
 
     plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useMathText=True)
     fig.savefig(fig_out_path_sad, format='pdf')
-    plt.show()
+    #plt.show()
 
 
