@@ -6,9 +6,9 @@ import os
 
 imp_sig = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
 n_thread = 2; n_model = 2;
-for sig in imp_sig:
-    os.system('mpiexec -n ' + str(n_thread) + ' python train_cluster.py --sig_s ' + str(round(sig, 1)) + \
-    ' --n_model ' + str(n_model))
+#for sig in imp_sig:
+#    os.system('mpiexec -n ' + str(n_thread) + ' python train_cluster.py --sig_s ' + str(round(sig, 1)) + \
+#    ' --n_model ' + str(n_model))
 
 # Reproducing figure 1, takes 2 minites
 rule_name = "color_reproduction_delay_unit" # rule name (RNN architeture and task type) through out this paper
@@ -69,7 +69,7 @@ for model_name in ['3.0']: # uniform, biased, and strongly biased
                str(delay_len) + ' --file_label ' + model_name)
     # decode velocity, fig. 4c. see output figure as decode_vel_plane.pdf
     os.system('python ./figs/decode_vel_state.py' + ' --model_dir ' + model_dir + ' --sub_dir ' + sub_dir + ' --file_label ' + model_name)
-     ./figs/fig_collect/combine_xxx.pdf
+    # find figures in ./figs/fig_collect/combine_xxx.pdf
     os.system('python ./figs/combine_state.py' + ' --model_dir ' + model_dir + ' --sub_dir ' + sub_dir + ' --file_label ' + model_name)
 
 # Reproducing figure 4
