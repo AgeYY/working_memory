@@ -78,7 +78,7 @@ model_name = '25.0'
 model_dir = "../core/model/model_" + model_name + "/color_reproduction_delay_unit/"
 rule_name = "color_reproduction_delay_unit"
 delay_len = 6000
-gen_data='N'
+gen_data='Y'
 
 # bump activity for very long delay, see output in bumpxxx_long_delay.pdf
 os.system('python ./figs/bump.py' + ' --model_dir ' + model_dir + ' --sub_dir ' + sub_dir + ' --prod_interval ' + str(delay_len) +\
