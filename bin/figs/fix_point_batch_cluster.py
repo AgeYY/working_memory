@@ -36,7 +36,7 @@ parser.add_argument('--prod_interval', default=1000, type=int,
                     help='delay epoch length')
 parser.add_argument('--file_label', default='', type=str,
                     help='the figure filename would be name + file_label.pdf')
-parser.add_argument('--gen_data', default=False, action='store_true',
+parser.add_argument('--gen_data', default=True, action='store_true',
                     help='generate data or not')
 
 arg = parser.parse_args()

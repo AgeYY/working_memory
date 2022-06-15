@@ -1,20 +1,20 @@
 import os
 
-## Training models, models with sigma_s = 3, 25, and 90 degree are essential to reproduce the main result of the paper.
-## Alternatively, download models in https://wustl.app.box.com/file/964118053859?s=3xnt37fddxelvio2fztlawyieatf2agq
+# Training models, models with sigma_s = 3, 25, and 90 degree are essential to reproduce the main result of the paper.
+# Alternatively, download models in https://wustl.app.box.com/file/964118053859?s=3xnt37fddxelvio2fztlawyieatf2agq
 # The trained/downloaded models will/should be in /core/model/
 
 imp_sig = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
-n_thread = 2; n_model = 2;
+n_thread = 20; n_model = 50;
 for sig in imp_sig:
     os.system('mpiexec -n ' + str(n_thread) + ' python train_cluster.py --sig_s ' + str(round(sig, 1)) + \
     ' --n_model ' + str(n_model))
 
 ## Reproducing figure 1, takes 2 minites
-ule_name = "color_reproduction_delay_unit" # rule name (RNN architeture and task type) through out this paper
-odel_dir = "../core/model/model_25.0/color_reproduction_delay_unit/" # source model
-en_data = 'Y' # generate figure data
-ub_dir = "/noise_delta"
+rule_name = "color_reproduction_delay_unit" # rule name (RNN architeture and task type) through out this paper
+model_dir = "../core/model/model_25.0/color_reproduction_delay_unit/" # source model
+gen_data = 'Y' # generate figure data
+sub_dir = "/noise_delta"
 
 os.system('python ./figs/gaussian_error_group.py ' + model_dir + ' ' + rule_name + ' ' + sub_dir + ' ' + gen_data) # gaussian noise error
 # see output figure in ./figs/fig_collect/gaussian_rnn.pdf
@@ -99,14 +99,14 @@ for delay_len in [60, 1000]:
 sub_dir = 'model_0/noise_delta'
 for model_name in ['90.0', '25.0', '3.0']:
     model_dir = "../core/model/model_" + model_name + "/color_reproduction_delay_unit/"
-    # figure 6 a, b, find figures in angle_xxx_density.pdf and angle_xxx_function.pdf
+    ## figure 6 a, b, find figures in angle_xxx_density.pdf and angle_xxx_function.pdf
     os.system('python ./figs/encode_space.py ' + model_dir + ' ' + rule_name + ' ' + sub_dir + ' ' + gen_data + ' ' + \
           "./figs/fig_collect/angle_" + model_name)
     # figure 6c, distribution of attractors, find output @ att_dis_xxx.pdf
     os.system('python ./figs/fix_point_batch.py' + ' --model_dir ' + model_dir + ' --file_label ' + model_name)
     
-    # or using mpi4py to search fixpoints
-    os.system('mpiexec -n 2 python ./figs/fix_point_batch_cluster.py' + ' --model_dir ' + model_dir + ' --file_label ' + model_name)
+    ## or using mpi4py to search fixpoints
+    #os.system('mpiexec -n ' + str(n_thread) + 'python ./figs/fix_point_batch_cluster.py' + ' --model_dir ' + model_dir + ' --file_label ' + model_name)
 
 # Figure 6a, find figure as rnn_ddm_sim_25.0.pdf
 model_name = '25.0'
@@ -121,7 +121,6 @@ for model_name in ['90.0', '25.0', '12.5']:
     
 # figure 6d, can take a few hours
 keys = ['90.0', '30.0', '27.5', '25.0', '22.5', '20.0', '17.5', '15.0', '12.5']
-keys = ['90.0', '12.5']
 for model_name in keys: # generate data
     model_dir = "../core/model/model_" + model_name + "/color_reproduction_delay_unit/"
     os.system('mpiexec -n 2 python ./figs/rnn_noise_bay_drift.py' + ' --model_dir ' + model_dir + ' --file_label ' + model_name + \

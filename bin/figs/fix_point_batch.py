@@ -68,11 +68,7 @@ if gen_data:
     fixpoint_colors = []
     fixpoint_att = []
 
-    count =0
     for sub in group.group:
-        count += 1
-        if count > 2:
-            break
         model_dir = sub.model_dir
         fixpoint_output = ultimate_find_fixpoints(model_dir, rule_name, batch_size=batch_size, n_epochs=n_epochs, lr=lr, speed_thre=speed_thre, milestones=milestones, prod_intervals=prod_interval_search, initial_type=initial_type, sigma_init=sigma_init) # find the angle of fixpoints
         # decode the angles to color
