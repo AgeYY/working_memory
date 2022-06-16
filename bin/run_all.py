@@ -61,8 +61,7 @@ os.system('python ./figs/manifold.py ' + model_dir + ' ' + rule_name + ' ' + sub
 delay_len = 800
 sub_dir="/model_0/noise_delta" # pick the first model as an example model
 
-#for model_name in ['90.0', '25.0', '3.0']: # uniform, biased, and strongly biased
-for model_name in ['3.0']: # uniform, biased, and strongly biased
+for model_name in ['90.0', '25.0', '3.0']: # uniform, biased, and strongly biased
     model_dir = "../core/model/model_" + model_name + "/color_reproduction_delay_unit/"
     # fixpoint ring, fig. 4c. see output figure as traj_fix_xxx.pdf
     os.system('python ./figs/fix_point_ring.py' + ' --model_dir ' + model_dir + ' --sub_dir ' + sub_dir + ' --prod_interval ' + \
