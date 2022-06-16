@@ -112,14 +112,14 @@ def disentangle(position):
     edge = int(np.sqrt(position.shape[0]))
     x = position[:, 0].reshape(edge, edge)
     y = position[:, 1].reshape(edge, edge)
-    return x, y
+    return np.flip(x, 0), np.flip(y, 0)
 
 x_pca, y_pca = disentangle(hidden0_vel_pca)
 vel_x_pca, vel_y_pca = disentangle(vel_pca)
 
 speed = np.sqrt(vel_x_pca**2 + vel_y_pca**2)
 lw = 5 * speed / 20
-ax.streamplot(x_pca, y_pca, vel_x_pca, vel_y_pca, density=stream_density, maxlength=stream_maxlength, linewidth=lw, color='b', integration_direction='both', arrowsize=arrowsize,  arrowstyle='->')
+ax.streamplot(x_pca[0, :], y_pca[:, 0], vel_x_pca, vel_y_pca, density=stream_density, maxlength=stream_maxlength, linewidth=lw, color='b', integration_direction='both', arrowsize=arrowsize,  arrowstyle='->')
 
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
