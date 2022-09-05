@@ -143,13 +143,14 @@ def array_pipline(array, label, t_strength=None, thresh=None, bin_width=5, sort=
 
     return array_pped, label_pped
 
-def bin_mat(mat, label, bin_width, nan_method='remove'):
+def bin_mat(mat, label, bin_width, nan_method='remove', avg_method='bin'):
     '''
     averge the columns of mat by their labels.
     input:
       mat ([float] (n, n_labels))
       label ([float] (n_labels))
       bin_width (int): if its 5 then the neuron label would be its example [0, 5, 10, ..., 355]
+      avg_method (str 'bin' or 'gaussian'):
       nan_method (str or float):
         float -- fill in nan with the value
         'remove': remove columns contains nan
@@ -165,8 +166,14 @@ def bin_mat(mat, label, bin_width, nan_method='remove'):
     n_bin = len(label_bin)
     mat_bin = np.zeros((mat.shape[0], n_bin))
     for i in range(len(label_bin)):
-        col_idx = (label < label_bin_ex[i + 1]) * (label > label_bin_ex[i])
-        mat_bin[:, i] = np.mean( mat[:, col_idx], axis=1 )
+        if avg_method == 'bin':
+            col_idx = (label < label_bin_ex[i + 1]) * (label > label_bin_ex[i])
+            mat_bin[:, i] = np.mean( mat[:, col_idx], axis=1 )
+        elif avg_method == 'gaussian':
+            weight = np.exp( -(label - label_bin[i])**2 / 2.0 / (bin_width / 2.0)**2 )
+            denominator = mat @ weight
+            nomalization = np.sum(weight)
+            mat_bin[:, i] = denominator / nomalization
 
     label_bin = label_bin + bin_width / 2 # use the center
 
