@@ -90,9 +90,10 @@ def plot_report_dist(report_dist, add_common_color=False):
     return fig, ax
 
 
-### plot RNN result
-dire_df = pd.read_csv(out_path)
-fig, ax = plot_report_dist(dire_df['report_color'], add_common_color=True)
-ax.set_xlabel('Response value', fontsize=fs)
-fig.savefig('./figs/fig_collect/report_rnn.pdf', format='pdf')
-#plt.show()
+if __name__ == "__main__":
+    ### plot RNN result
+    dire_df = pd.read_csv(out_path)
+    fig, ax = plot_report_dist(dire_df['report_color'], add_common_color=True)
+    ax.set_xlabel('Response value', fontsize=fs)
+    fig.savefig('./figs/fig_collect/report_rnn.pdf', format='pdf')
+    #plt.show()
