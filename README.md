@@ -4,7 +4,7 @@ This project employed artificial recurrent neural networks (RNNs) as a model of 
 
 # How to use this repo
 
-Please find *./bin/PersiTransWM.ipynb* for reproducing main figures, and *./bin/PersiTransWM.ipynb* for SI figures. Pretrained models can be downloaded in [here](https://wustl.box.com/s/3xnt37fddxelvio2fztlawyieatf2agq) which should be put under ./core/
+Please find *./bin/PersiTransWM.ipynb* for reproducing main figures, and *./bin/PersiTransWM.ipynb* for SI figures. Pretrained models can be downloaded in [here](https://wustl.box.com/s/s2mm4h8pf0aurv04kfp4pwd75m5k98pn) which should be put under ./core/
 
 ## Requirement
     - Python version 3.8.8.
@@ -12,6 +12,7 @@ Please find *./bin/PersiTransWM.ipynb* for reproducing main figures, and *./bin/
     - colormath 3.0.0
     - mpi4py 3.1.3
     - pandas, seaborn, scikit-learn, statsmodels, numba
+we also provided working_memory.yml for reference.
 
 # Acknowledgement
 

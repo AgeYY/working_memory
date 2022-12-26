@@ -38,6 +38,7 @@ prod_intervals = arg.prod_interval
 file_label = arg.file_label
 gen_data = arg.gen_data
 sigma_s = arg.sigma_s
+gen_data = False
 
 out_dir = './figs/fig_data/rnn_noise_bay_' + file_label + '.json'
 fig_name = 'rnn_bay_drift_' + file_label + '.pdf'
