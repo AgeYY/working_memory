@@ -58,8 +58,9 @@ def rad2deg(arr, shift=False):
 ##### load RNN data
 keys = ['90.0', '30.0', '27.5', '25.0', '22.5', '20.0', '17.5', '15.0', '12.5']
 file_label = keys[4]
-out_dir = '../bin/figs/fig_data/rnn_noise_bay_' + file_label + '.json'
-fig_name = 'rnn_bay_drift_' + file_label + '.pdf'
+out_dir = './figs/fig_data/rnn_noise_bay_' + file_label + '.json'
+fig_name = 'rnn_noise_bay_theo_drift_' + file_label + '.pdf'
+
 data = tools.load_dic(out_dir)
 # get rnn_drift force
 color_mesh, rnn_drift, bay_drift = np.array(data['rnn_color']), np.array(data['rnn_drift']), np.array(data['bay_drift'])
@@ -103,4 +104,7 @@ plt.fill_between(x_mesh_ppd, mean_drift_theo - se_drift_theo, mean_drift_theo + 
 plt.axhline(y=0, linestyle='--')
 plt.legend()
 plt.title('prior sigma_s is ' + file_label)
+plt.savefig('./figs/fig_collect/' + fig_name, format='pdf')
+
 plt.show()
+
