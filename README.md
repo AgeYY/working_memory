@@ -4,7 +4,11 @@ This project employed artificial recurrent neural networks (RNNs) as a model of 
 
 # How to use this repo
 
-Please find *./bin/PersiTransWM.ipynb* for reproducing main figures, and *./bin/PersiTransWM.ipynb* for SI figures. Pretrained models can be downloaded in [here](https://wustl.box.com/s/s2mm4h8pf0aurv04kfp4pwd75m5k98pn) which should be put under ./core/
+Please find *./bin/PersiTransWM.ipynb* for reproducing main figures, and *./bin/PersiTransWM.ipynb* for SI figures.
+
+Pretrained RNN models can be downloaded in [here](https://wustl.box.com/s/s2mm4h8pf0aurv04kfp4pwd75m5k98pn.) The folder should be put under ./core/.
+
+To draw figure without generating data (which take be hours), first, download figure data [here](https://wustl.box.com/s/s2mm4h8pf0aurv04kfp4pwd75m5k98pn.) and put *fig_data* folder under ./bin/figs/. Next set *--gen_data* option in *./bin/PersiTransWM.ipynb* to false. Finally run the code.
 
 ## Requirement
     - Python version 3.8.8.
