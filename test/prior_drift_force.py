@@ -57,7 +57,7 @@ def rad2deg(arr, shift=False):
 
 ##### load RNN data
 keys = ['90.0', '30.0', '27.5', '25.0', '22.5', '20.0', '17.5', '15.0', '12.5']
-file_label = keys[4]
+file_label = keys[5]
 out_dir = '../bin/figs/fig_data/rnn_noise_bay_' + file_label + '.json'
 fig_name = 'rnn_bay_drift_' + file_label + '.pdf'
 data = tools.load_dic(out_dir)
