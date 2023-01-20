@@ -11,7 +11,7 @@ import numpy as np
 from core.agent import Agent
 from core.net_struct.main import Bump_activity, bump_pipline, bin_fir, sc_dist
 
-model_dir = '../core/model/model_10.0/color_reproduction_delay_unit/model_0/' # one rnn model
+model_dir = '../core/model/model_3.0/color_reproduction_delay_unit/model_0/' # one rnn model
 rule_name = 'color_reproduction_delay_unit' # rule name is fixed to color_reproduction_delay_unit. Actually this repo can also train another type of RNN with slightly different input format, but in this paper we only use color_reproduction_delay_unit
 epoch = 'interval' # delay period
 binwidth = 5 # binwidth for output color and target color
