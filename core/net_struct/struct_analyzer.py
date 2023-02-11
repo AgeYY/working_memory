@@ -62,7 +62,7 @@ class Labeler(Agent_loader):
         rnn_de = RNN_decoder()
         rnn_de.read_rnn_agent(self.sub)
         n_parts = state_list.shape[0] // step_size + 1
-        bins = np.linspace(0, state_list.shape[0], n_parts, endpoint=False)
+        bins = np.linspace(0, state_list.shape[0], int(n_parts), endpoint=False)
         bins = np.append(bins, state_list.shape[0]) # add endpoint
         bins = bins.astype(int)
         self.input_colors = []

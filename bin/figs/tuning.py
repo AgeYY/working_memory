@@ -1,12 +1,10 @@
 # tuning matrix, bump activity
 import context
-from core.color_manager import Degree_color
 import matplotlib.pyplot as plt
 import numpy as np
 from core.agent import Agent
-from core.net_struct.main import Bump_activity, bump_pipline, bin_fir
 import sys
-from core.net_struct.main import circular_mean
+from core.net_struct.struct_analyzer import Struct_analyzer
 import pandas as pd
 import seaborn as sns
 import core.tools as tools
@@ -18,14 +16,16 @@ try:
     rule_name = sys.argv[2]
     sub_dir = sys.argv[3]
     label_name = sys.argv[5]
+    gen_data = sys.argv[4]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
-    sub_dir = 'model_16/noise_delta/'
+    model_dir = '../core/model/model_10.0/color_reproduction_delay_unit/'
+    sub_dir = 'model_0/noise_delta/'
     label_name = ''
+    gen_data = 'Y'
 
 try:
-    if sys.argv[4] == 'Y': # set false so it will not generate data
+    if gen_data == 'Y': # set false so it will not generate data
         gen_data = True
     else:
         gen_data = False
@@ -35,26 +35,19 @@ except:
 ####################
 
 prod_intervals_tuning = 800 # a parameter used for computing the tuning curve of neurons
-pca_degree = np.arange(0, 360, 1) # Plot the trajectories of these colors
 sigma_rec, sigma_x = 0, 0
-tuned_thre = -999
-bin_width = 15
+bin_width_color = 5;
+label_method = 'rnn_decoder'
+nan_method = 'remove'
+n_colors = 360
 
 def output_data(sub_dir, model_dir, rule_name):
     # repeat trials
     sub = Agent(model_dir + sub_dir, rule_name)
-    fir_rate_list = []
-    fir_rate, _, _ = sub.do_exp(prod_intervals=prod_intervals_tuning, ring_centers=pca_degree, sigma_rec=0.0, sigma_x=0.0)
-    fir_rate_list.append(fir_rate)
-    # mean firing rate
-    fir_rate_list = np.concatenate(fir_rate_list).reshape(-1, *fir_rate.shape)
-    fir_rate_mean = np.mean(fir_rate_list, axis=0)
-
-    # get the tuning matrix
-    bump = Bump_activity()
-    bump.fit(sub.behaviour['target_color'], fir_rate_mean, sub.epochs['interval'])
-
-    tuning_pped, label = bump_pipline(bump, bump.tuning.copy(), thre=tuned_thre, bin_width=None)
+    str_ana = Struct_analyzer()
+    str_ana.read_rnn_agent(sub)
+    str_ana.prepare_label(n_colors=n_colors, sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=1, prod_intervals=prod_intervals_tuning, method=label_method, bin_width_color=bin_width_color, nan_method=nan_method)
+    tuning_pped, neuron_label, color_label = str_ana.output_tuning(bin_width_color=bin_width_color, bin_width_neuron=None) # show tuning matrix for each rnn
 
     ## save data
     pd.DataFrame(tuning_pped).to_csv('./figs/fig_data/tuning.csv', header=None, index=None)
@@ -76,8 +69,12 @@ fig.colorbar(im)
 
 ax.set_xlim([0, 256]) # there is end effect for calculating ci
 ax.set_xticks([0, 256])
-ax.set_ylim([0, 360]) # there is end effect for calculating ci
-ax.set_yticks([0, 40, 130, 220, 310, 360])
+ylim = [0, 360 // bin_width_color]
+ax.set_ylim(ylim) # there is end effect for calculating ci
+ax.set_yticks(np.linspace(*ylim, 6).astype(int))
+a = ax.get_xticks().tolist()
+a = np.linspace(0, 360, 6).astype(int)
+ax.set_yticklabels(a)
 
 for tick in ax.xaxis.get_major_ticks():
     tick.label.set_fontsize(12)
@@ -90,4 +87,4 @@ ax.set_xlabel('Neurons')
 ax.set_ylabel('Input color (deg)')
 
 fig.savefig('./figs/fig_collect/tuning_' + label_name + '.pdf', format='pdf')
-#plt.show()
+plt.show()
