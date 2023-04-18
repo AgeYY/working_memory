@@ -1,26 +1,16 @@
 # structure connectivity matrix ordered in degree, one step update
+import os
 import context
 import numpy as np
 from core.agent import Agent, Agent_loader
 from core.rnn_decoder import RNN_decoder
+from core.manifold.fix_point import Hidden0_helper
 
 class Labeler(Agent_loader):
     '''
     The final output is a tuning curve self.tuning with shape (len(self.sense_color), len(self.label)), whose column are sense colors, row are neurons labeled be their prefer colors. A measurement for accessing if the neuron has accute tuning curve is given by t_strength (shape = self.label). Closer to 1 means the neuron would only fire in response to one color. Closer to 0 means the neuron might not use for encoding colors
     '''
-    def do_exp(self, n_colors=360, sigma_rec=None, sigma_x=None, batch_size=2, prod_intervals=200):
-        '''
-        do experiments. The result would be used for further analysis.
-        input:
-          sigma_rec (float): recurrent noise. Set to None to use default value in RNN
-          sigma_x (float): input noise. Set to None to use default value in RNN
-          batch_size (int): the total number of trials is batch_size * number of colors
-          n_colors (int): the input colors are equally spaced colors.
-        output:
-          state_list (n, hidden_size): n states each has possible different color information.
-          fir_rate_list (n, hidden_size): n states each has possible different color information.
-          input_colors (n, hidden_size): n states each has possible different color information.
-        '''
+    def do_exp_by_trial(self, n_colors=360, sigma_rec=None, sigma_x=None, batch_size=2, prod_intervals=200):
         pca_degree = np.linspace(0, 360, n_colors, endpoint=False)
 
         state_list = []
@@ -41,6 +31,40 @@ class Labeler(Agent_loader):
 
         self.input_colors = np.concatenate(input_colors) # input colors in experiment. This would be used if you wanna calculate the response matrix in delay method. Expand input colors
         self.input_colors = self.input_colors.flatten()
+
+        return self.state_list, self.fir_rate, self.input_colors
+
+    def do_exp_by_delay_ring(self, n_colors=360, sigma_rec=None, sigma_x=None, batch_size=2, prod_intervals=200):
+        pca_degree = np.linspace(0, 360, n_colors, endpoint=False)
+        self.sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x)
+
+        n_states = n_colors * batch_size # sample n_states from the PC1-PC2 delay ring
+
+        delay_ring_helper = Hidden0_helper(self.sub.model.hidden_size) # hidden_size is the number of recurrent neurons
+        _, self.state_list = delay_ring_helper.delay_ring(self.sub, batch_size=n_states)
+        self.fir_rate = np.tanh(self.state_list) + 1
+        self.input_colors = self.label_input_color_rnn_decoder(self.state_list)
+
+        return self.state_list, self.fir_rate, self.input_colors
+
+
+    def do_exp(self, n_colors=360, sigma_rec=None, sigma_x=None, batch_size=2, prod_intervals=200, method='trial'):
+        '''
+        do experiments. The result would be used for further analysis.
+        input:
+          sigma_rec (float): recurrent noise. Set to None to use default value in RNN
+          sigma_x (float): input noise. Set to None to use default value in RNN
+          batch_size (int): the total number of trials is batch_size * number of colors
+          n_colors (int): the input colors are equally spaced colors.
+        output:
+          state_list (n, hidden_size): n states each has possible different color information.
+          fir_rate_list (n, hidden_size): n states each has possible different color information.
+          input_colors (n, hidden_size): n states each has possible different color information.
+        '''
+        if method == 'trial':
+            self.state_list, self.fir_rate, self.input_colors = self.do_exp_by_trial(n_colors=n_colors, sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, prod_intervals=prod_intervals)
+        elif method == 'delay_ring':
+            self.state_list, self.fir_rate, self.input_colors = self.do_exp_by_delay_ring(n_colors=n_colors, sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, prod_intervals=prod_intervals)
 
         return self.state_list, self.fir_rate, self.input_colors
 
@@ -224,7 +248,7 @@ class Struct_analyzer(Labeler):
     '''
     input a agent, output its weight and bias array with various forms
     '''
-    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, nan_method='remove'):
+    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, nan_method='remove', generate_state_method='trial'):
         '''
         The final output is a tuning curve self.tuning with shape (len(self.sense_color), len(self.label)), whose column are sense colors, row are neurons labeled be their prefer colors. A measurement for accessing if the neuron has accute tuning curve is given by t_strength (shape = self.label). Closer to 1 means the neuron would only fire in response to one color. Closer to 0 means the neuron might not use for encoding colors
         input:
@@ -234,11 +258,19 @@ class Struct_analyzer(Labeler):
         output:
           state_list (n, hidden_size): n states each has possible different color information.
         '''
-        super().do_exp(n_colors=n_colors, sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, prod_intervals=prod_intervals)
-        if method=='rnn_decoder':
-            super().label_input_color_rnn_decoder(self.state_list)
-        elif method=='delay_avg':
-            super().label_input_color_delay_avg
+        if generate_state_method == 'delay_ring':
+            super().do_exp_by_delay_ring(n_colors=n_colors, sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, prod_intervals=prod_intervals) # generated state will be automatically decoded by rnn decoder
+
+        elif generate_state_method == 'trial':
+            super().do_exp_by_trial(n_colors=n_colors, sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, prod_intervals=prod_intervals)
+            if method=='rnn_decoder':
+                super().label_input_color_rnn_decoder(self.state_list)
+            elif method=='delay_avg' :
+                super().label_input_color_delay_avg() # the name is misleading
+            else:
+                os.abort('method for decoding state can only be rnn_decoder or delay_avg')
+        else:
+            os.abort('method for generating states can only be delay_ring or trial')
 
         super().bin_input_color(bin_width=bin_width_color, nan_method=nan_method)
 
