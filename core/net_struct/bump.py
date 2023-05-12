@@ -41,7 +41,7 @@ class bump_finder(Struct_analyzer):
 
         return state_list
 
-    def search_exceed_delta_color(self):
+    def search_exceed_delta_color(self, verbose=True):
         for i in range(self.max_iter):
             state_list = self.do_one_exp()
 
@@ -54,10 +54,17 @@ class bump_finder(Struct_analyzer):
 
             delay_start_color = rnn_de.decode(delay_start_state)[0]
             delay_end_color = rnn_de.decode(delay_end_state)[0]
-        
-            if abs(delay_start_color - delay_end_color) > self.delta_color:
+            exp_delta_color = abs(delay_start_color - delay_end_color)
+
+            if verbose:
+                print('start_color: {}'.format( delay_start_color))
+                print('end_color: {}'.format( delay_end_color ))
+                print('delta_color: {}'.format( exp_delta_color ))
+                print('\n')
+            if  exp_delta_color > self.delta_color:
                 print('Searching bump succeed! \n start: {} \t end: {}'.format(delay_start_color, delay_end_color))
                 break
+        if i == (self.max_iter - 1): print('Searching bump failed!')
         return state_list
 
     def out_bump(self, state_list, thresh=None, bin_width=None, sort=True, nan_method='remove'):

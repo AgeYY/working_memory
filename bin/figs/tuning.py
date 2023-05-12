@@ -19,7 +19,7 @@ try:
     gen_data = sys.argv[4]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model/model_3.0/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_15.0/color_reproduction_delay_unit/'
     sub_dir = 'model_0/noise_delta/'
     label_name = ''
     gen_data = 'Y'

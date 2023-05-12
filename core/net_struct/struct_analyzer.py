@@ -255,6 +255,7 @@ class Struct_analyzer(Labeler):
           sigma (float): noise in doing the experiment
           batch_size (int): the total number of trials is batch_size * number of colors
           bin_width_color : labeling neurons by population vector, so you need to make sure the chance of every color occur is equal. This is acheved by aveger input colors within small bin
+          generate_state_method (str): methods of generating firing rate profile. delay_ring means draw a ring in pc1-pc2. trial means using different stimulus color
         output:
           state_list (n, hidden_size): n states each has possible different color information.
         '''
