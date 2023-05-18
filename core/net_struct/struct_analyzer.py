@@ -281,14 +281,14 @@ class Struct_analyzer(Labeler):
         return self.fir_rate, self.input_colors, self.label, self.t_strength
 
 
-    def output_bias(self, thresh=None, sort=None, bin_width=None, nan_method='remove'):
+    def output_bias(self, thresh=None, sort=None, bin_width=None, nan_method='remove', avg_method='gaussian'):
         '''
         1. Obtain bias weight from rnn
         2. thresh, sort and bin bias weight according to the label
         '''
         bias_hh = self.sub.model.bias_h.detach().cpu().numpy()
         bias_hh = bias_hh.reshape(1, -1)
-        bias_pped, label_pped = array_pipline(bias_hh, self.label, t_strength=self.t_strength, thresh=thresh, bin_width=bin_width, sort=sort, nan_method=nan_method)
+        bias_pped, label_pped = array_pipline(bias_hh, self.label, t_strength=self.t_strength, thresh=thresh, bin_width=bin_width, sort=sort, nan_method=nan_method, avg_method=avg_method)
 
         return bias_pped, label_pped
 
