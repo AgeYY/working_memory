@@ -141,7 +141,7 @@ def circular_mean(weights, angles):
     norm = np.linalg.norm([x, y])
     return mean, norm
 
-def array_pipline(array, label, t_strength=None, thresh=None, bin_width=5, sort=True, nan_method='remove'):
+def array_pipline(array, label, t_strength=None, thresh=None, bin_width=5, sort=True, nan_method='remove', avg_method='bin'):
     '''
     array (n, hidden_size): something related to neurons. This function will do the following procedures to this array
     
@@ -163,7 +163,7 @@ def array_pipline(array, label, t_strength=None, thresh=None, bin_width=5, sort=
     if bin_width is None:
         array_pped, label_pped = array_temp, array_temp
     else:
-        array_pped, label_pped, _ = bin_mat(array_temp, label_temp, bin_width, nan_method=nan_method)
+        array_pped, label_pped, _ = bin_mat(array_temp, label_temp, bin_width, nan_method=nan_method, avg_method=avg_method)
 
     return array_pped, label_pped
 
@@ -184,6 +184,7 @@ def bin_mat(mat, label, bin_width, nan_method='remove', avg_method='bin'):
       label_bin ([float] (n_bin)): example [2.5, 7.5, 12.5, ..., 357.5]
       nan_args (array [bool], [mat_bin.shape[1]]): true if the column contains nan. This can help you know which columns is removed.
     '''
+    #avg_method='gaussian'
 
     label_bin = np.arange(0, 360, bin_width)
     label_bin_ex = np.append(label_bin, [360])
@@ -292,14 +293,14 @@ class Struct_analyzer(Labeler):
         return bias_pped, label_pped
 
 
-    def output_weight(self, thresh=None, bin_width=None, sort=True, nan_method='remove'):
+    def output_weight(self, thresh=None, bin_width=None, sort=True, nan_method='remove', avg_method='gaussian'):
         '''
         1. Obtain rnn weight
         2. thresh, sort and bin bias weight according to the label
         '''
         weight_hh = self.sub.model.weight_hh.detach().cpu().numpy()
-        weight_hh, label_pped = array_pipline(weight_hh, self.label, t_strength=self.t_strength, thresh=thresh, bin_width=bin_width, sort=sort, nan_method=nan_method)
-        weight_hh_pped, label_pped = array_pipline(np.transpose(weight_hh), self.label, t_strength=self.t_strength, thresh=thresh, bin_width=bin_width, sort=sort, nan_method=nan_method)
+        weight_hh, label_pped = array_pipline(weight_hh, self.label, t_strength=self.t_strength, thresh=thresh, bin_width=bin_width, sort=sort, nan_method=nan_method, avg_method=avg_method)
+        weight_hh_pped, label_pped = array_pipline(np.transpose(weight_hh), self.label, t_strength=self.t_strength, thresh=thresh, bin_width=bin_width, sort=sort, nan_method=nan_method, avg_method=avg_method)
         weight_hh_pped = np.transpose(weight_hh_pped)
 
         return weight_hh_pped, label_pped
