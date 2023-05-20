@@ -11,14 +11,14 @@ import numpy as np
 from core.agent import Agent
 from core.net_struct.struct_analyzer import Struct_analyzer
 
-model_dir_parent = '../core/model/model_3.0/color_reproduction_delay_unit/' # one rnn model
+model_dir_parent = '../core/model/model_15.0/color_reproduction_delay_unit/' # one rnn model
 model_dir = model_dir_parent + 'model_0/'
 rule_name = 'color_reproduction_delay_unit' # rule name is fixed to color_reproduction_delay_unit. Actually this repo can also train another type of RNN with slightly different input format, but in this paper we only use color_reproduction_delay_unit
 prod_intervals=800 # set the delay time to 800 ms for ploring the trajectory
-n_colors=720 # number of trials, each trial with different color
+n_colors=1000 # number of trials, each trial with different color
 tuned_thre = -0.0 # discard neurons with weak color selectivity, for example, a flat tuning curve
 bin_width_color = 1 # We mesh color bins in calculating tuning curve.
-bin_width = 3 # connectivity of these neurons with similar preferred color would be averaged. Note bin_width_color is mesh for tuning curve, but this one is mesh for preferred color.
+bin_width = 1 # connectivity of these neurons with similar preferred color would be averaged. Note bin_width_color is mesh for tuning curve, but this one is mesh for preferred color.
 label_method = 'rnn_decoder' # use rnn decoder to map firing rate with color
 nan_method = 'remove' # how to handle nan ==> remove it
 generate_state_method = 'delay_ring'
@@ -36,16 +36,12 @@ def compute_one_sub_connect(sub):
 
 weight_hh_avg = []
 bias_hh_avg = []
-#count = 0
 for filename in os.listdir(model_dir_parent):
-    #filename = 'model_1'
     f = os.path.join(model_dir_parent, filename)
     sub = Agent(f, rule_name)
     weight_hh_pped, label_weight_pped, bias_hh_pped, label_bias_pped = compute_one_sub_connect(sub)
     weight_hh_avg.append(weight_hh_pped)
     bias_hh_avg.append(bias_hh_pped)
-    #count += 1
-    #if count > 0: break
 
 weight_hh_avg = np.array(weight_hh_avg)
 weight_hh_avg = np.mean(weight_hh_avg, axis=0)
@@ -58,3 +54,11 @@ plt.colorbar()
 plt.show()
 plt.scatter(label_bias_pped, bias_hh_avg)
 plt.show()
+
+#common_color = np.array([40, 130, 220, 310]) / bin_width + 0.5
+#weight_input = np.sum(weight_hh_avg, axis=1)
+#plt.figure()
+#plt.scatter(range(weight_input.shape[0]), weight_input)
+#for cc in common_color:
+#    plt.axvline(cc)
+#plt.show()
