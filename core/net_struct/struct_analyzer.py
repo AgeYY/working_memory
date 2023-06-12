@@ -161,7 +161,7 @@ def array_pipline(array, label, t_strength=None, thresh=None, bin_width=5, sort=
         array_temp, label_temp = sort_mat(array_temp, label_temp)
 
     if bin_width is None:
-        array_pped, label_pped = array_temp, array_temp
+        array_pped, label_pped = array_temp, label_temp
     else:
         array_pped, label_pped, _ = bin_mat(array_temp, label_temp, bin_width, nan_method=nan_method, avg_method=avg_method)
 

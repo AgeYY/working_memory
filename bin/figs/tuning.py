@@ -19,7 +19,7 @@ try:
     gen_data = sys.argv[4]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model/model_15.0/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_3.0/color_reproduction_delay_unit/'
     sub_dir = 'model_0/noise_delta/'
     label_name = ''
     gen_data = 'Y'
@@ -41,6 +41,7 @@ label_method = 'rnn_decoder'
 nan_method = 'remove'
 n_colors = 1000
 generate_state_method = 'delay_ring'
+#generate_state_method = 'trial'
 
 def output_data(sub_dir, model_dir, rule_name):
     # repeat trials
