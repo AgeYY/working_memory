@@ -12,7 +12,7 @@ import seaborn as sns
 from core.agent import Agent
 from core.net_struct.struct_analyzer import Struct_analyzer
 
-model_dir_parent = '../core/model/model_15.0/color_reproduction_delay_unit/' # one rnn model
+model_dir_parent = '../core/model/model_3.0/color_reproduction_delay_unit/' # one rnn model
 model_dir = model_dir_parent + 'model_0/'
 rule_name = 'color_reproduction_delay_unit' # rule name is fixed to color_reproduction_delay_unit. Actually this repo can also train another type of RNN with slightly different input format, but in this paper we only use color_reproduction_delay_unit
 prod_intervals=800 # set the delay time to 800 ms for ploring the trajectory
@@ -20,17 +20,18 @@ n_colors=1000 # number of trials, each trial with different color
 tuned_thre = -0.0 # discard neurons with weak color selectivity, for example, a flat tuning curve
 bin_width_color = 1 # We mesh color bins in calculating tuning curve.
 bin_width = 1 # connectivity of these neurons with similar preferred color would be averaged. Note bin_width_color is mesh for tuning curve, but this one is mesh for preferred color.
-label_method = 'rnn_decoder' # use rnn decoder to map firing rate with color
+method = 'rnn_decoder' # use mean or max of firing rate to label neuron
+label_method = 'mean' # use mean or max of firing rate to label neuron
 nan_method = 'remove' # how to handle nan ==> remove it
 generate_state_method = 'delay_ring'
-num_rnn_max = 100
+num_rnn_max = 10
 
 # doing some experiments to collect firing rates
 
 def compute_one_sub_connect(sub):
     str_ana = Struct_analyzer()
     str_ana.read_rnn_agent(sub)
-    str_ana.prepare_label(n_colors=n_colors, sigma_rec=0, sigma_x=0, batch_size=1, prod_intervals=prod_intervals, method=label_method, bin_width_color=bin_width_color, nan_method=nan_method, generate_state_method=generate_state_method)
+    str_ana.prepare_label(n_colors=n_colors, sigma_rec=0, sigma_x=0, batch_size=1, prod_intervals=prod_intervals, method=method, bin_width_color=bin_width_color, nan_method=nan_method, generate_state_method=generate_state_method, label_method=label_method)
     weight_hh_pped, label_weight_pped = str_ana.output_weight(thresh=tuned_thre, bin_width=bin_width)
     bias_hh_pped, label_bias_pped = str_ana.output_bias(thresh=tuned_thre, bin_width=bin_width)
     return weight_hh_pped, label_weight_pped, bias_hh_pped, label_bias_pped
@@ -52,7 +53,7 @@ for filename in os.listdir(model_dir_parent):
 # plot label distribution
 plt.figure()
 label_weight_all_flat = np.array(label_weight_all).flatten()
-plt.hist(label_weight_all_flat, bins=300)
+plt.hist(label_weight_all_flat, bins=100)
 plt.show()
 
 # compute excitation

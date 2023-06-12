@@ -107,7 +107,7 @@ class Labeler(Agent_loader):
         self.fir_rate = np.transpose(self.fir_rate)
         return self.fir_rate.copy(), self.input_colors.copy()
 
-    def label_neuron(self, method='rnn_decoder'):
+    def label_neuron(self, method='mean'):
         '''
         labeling neurons by their prefer colors
         output:
@@ -120,13 +120,19 @@ class Labeler(Agent_loader):
         #fir_rate_mean = np.mean(self.fir_rate, axis = 0) # mean over the delay period
 
         # calculate the preference color
+        label_mean = []
         self.label = []
         self.t_strength = []
         for j in range(fir_rate.shape[1]): # loop over all neurons
             pref_angle, norm = circular_mean(fir_rate[:, j], input_colors)
+            #label_mean.append(pref_angle)
             self.label.append(pref_angle)
             self.t_strength.append(norm)
 
+        #if method == 'max':
+        #    self.label = input_colors[np.argmax(fir_rate, axis=1)]
+        #else:
+        #    self.label = np.array(label_mean)
         self.label = np.array(self.label)
         self.t_strength = np.array(self.t_strength)
 
@@ -249,7 +255,7 @@ class Struct_analyzer(Labeler):
     '''
     input a agent, output its weight and bias array with various forms
     '''
-    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, nan_method='remove', generate_state_method='trial'):
+    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, nan_method='remove', generate_state_method='trial', label_method='mean'):
         '''
         The final output is a tuning curve self.tuning with shape (len(self.sense_color), len(self.label)), whose column are sense colors, row are neurons labeled be their prefer colors. A measurement for accessing if the neuron has accute tuning curve is given by t_strength (shape = self.label). Closer to 1 means the neuron would only fire in response to one color. Closer to 0 means the neuron might not use for encoding colors
         input:
@@ -276,7 +282,7 @@ class Struct_analyzer(Labeler):
 
         super().bin_input_color(bin_width=bin_width_color, nan_method=nan_method)
 
-        super().label_neuron(method=method)
+        super().label_neuron(method=label_method)
 
         return self.fir_rate, self.input_colors, self.label, self.t_strength
 
