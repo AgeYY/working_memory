@@ -64,7 +64,6 @@ color_bin = np.linspace(0, 360, num_bin + 1, endpoint=True) # +1 to include endp
 color_bin_label = color_bin + bin_width_color / 2.0 # use center to label each bin
 color_bin_label = color_bin_label[:-1] # drop out the last label
 
-single_rnn_counter = np.zeros(num_bin)
 group_rnn_counter = np.zeros(num_bin)
 sum_group_ext = np.zeros(num_bin)
 
@@ -75,6 +74,7 @@ for i, weight_hh_i in enumerate(weight_hh_all):
     sum_ext_i_index_by_label = np.sum(weight_hh_i, axis=0)
 
     sum_ext_i = np.zeros(num_bin)
+    single_rnn_counter = np.zeros(num_bin)
     for i in range(num_neuron):
         sum_ext_i[idx[i]] += sum_ext_i_index_by_label[i]
         single_rnn_counter[idx[i]] += 1
@@ -88,7 +88,7 @@ for i, weight_hh_i in enumerate(weight_hh_all):
 avg_group_ext = sum_group_ext / group_rnn_counter
 avg_group_ext = np.nan_to_num(avg_group_ext)
 from scipy.ndimage import gaussian_filter1d
-avg_group_ext = gaussian_filter1d(avg_group_ext, 2, mode='wrap')
+avg_group_ext = gaussian_filter1d(avg_group_ext, 4, mode='wrap')
 
 plt.figure()
 plt.scatter(color_bin_label, avg_group_ext)
