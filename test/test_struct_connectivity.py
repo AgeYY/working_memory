@@ -19,12 +19,12 @@ prod_intervals=800 # set the delay time to 800 ms for ploring the trajectory
 n_colors=1000 # number of trials, each trial with different color
 tuned_thre = -0.0 # discard neurons with weak color selectivity, for example, a flat tuning curve
 bin_width_color = 1 # We mesh color bins in calculating tuning curve.
-bin_width = 1 # connectivity of these neurons with similar preferred color would be averaged. Note bin_width_color is mesh for tuning curve, but this one is mesh for preferred color.
+bin_width = None # connectivity of these neurons with similar preferred color would be averaged. Note bin_width_color is mesh for tuning curve, but this one is mesh for preferred color.
 method = 'rnn_decoder' # use mean or max of firing rate to label neuron
-label_method = 'mean' # use mean or max of firing rate to label neuron
+label_method = 'max' # use mean or max of firing rate to label neuron
 nan_method = 'remove' # how to handle nan ==> remove it
 generate_state_method = 'delay_ring'
-num_rnn_max = 10
+num_rnn_max = 50
 
 # doing some experiments to collect firing rates
 
@@ -88,7 +88,7 @@ for i, weight_hh_i in enumerate(weight_hh_all):
 avg_group_ext = sum_group_ext / group_rnn_counter
 avg_group_ext = np.nan_to_num(avg_group_ext)
 from scipy.ndimage import gaussian_filter1d
-avg_group_ext = gaussian_filter1d(avg_group_ext, 4, mode='wrap')
+avg_group_ext = gaussian_filter1d(avg_group_ext, 3, mode='wrap')
 
 plt.figure()
 plt.scatter(color_bin_label, avg_group_ext)

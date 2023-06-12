@@ -121,19 +121,16 @@ class Labeler(Agent_loader):
 
         # calculate the preference color
         label_mean = []
-        self.label = []
         self.t_strength = []
         for j in range(fir_rate.shape[1]): # loop over all neurons
             pref_angle, norm = circular_mean(fir_rate[:, j], input_colors)
-            #label_mean.append(pref_angle)
-            self.label.append(pref_angle)
+            label_mean.append(pref_angle)
             self.t_strength.append(norm)
 
-        #if method == 'max':
-        #    self.label = input_colors[np.argmax(fir_rate, axis=1)]
-        #else:
-        #    self.label = np.array(label_mean)
-        self.label = np.array(self.label)
+        if method == 'max':
+            self.label = input_colors[np.argmax(fir_rate, axis=0)]
+        else:
+            self.label = np.array(label_mean)
         self.t_strength = np.array(self.t_strength)
 
         return self.label.copy(), self.t_strength.copy()
