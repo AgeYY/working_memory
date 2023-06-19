@@ -98,12 +98,12 @@ class Labeler(Agent_loader):
 
         return self.input_colors.copy()
 
-    def bin_input_color(self, bin_width=5, nan_method='remove'):
+    def bin_input_color(self, bin_width=5, nan_method='remove', avg_method='bin'):
         '''
         later we will labeling neurons using population vector, so you need to make sure the chance of every color occur is equal.
         '''
         fir_rate_T = np.transpose(self.fir_rate)
-        self.fir_rate, self.input_colors, _ = bin_mat(fir_rate_T, self.input_colors, bin_width=bin_width, nan_method=nan_method)
+        self.fir_rate, self.input_colors, _ = bin_mat(fir_rate_T, self.input_colors, bin_width=bin_width, nan_method=nan_method, avg_method=avg_method)
         self.fir_rate = np.transpose(self.fir_rate)
         return self.fir_rate.copy(), self.input_colors.copy()
 
@@ -187,8 +187,6 @@ def bin_mat(mat, label, bin_width, nan_method='remove', avg_method='bin'):
       label_bin ([float] (n_bin)): example [2.5, 7.5, 12.5, ..., 357.5]
       nan_args (array [bool], [mat_bin.shape[1]]): true if the column contains nan. This can help you know which columns is removed.
     '''
-    #avg_method='gaussian'
-
     label_bin = np.arange(0, 360, bin_width)
     label_bin_ex = np.append(label_bin, [360])
     n_bin = len(label_bin)
@@ -252,7 +250,7 @@ class Struct_analyzer(Labeler):
     '''
     input a agent, output its weight and bias array with various forms
     '''
-    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, nan_method='remove', generate_state_method='trial', label_method='mean'):
+    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, bin_width_color_avg_method='bin', nan_method='remove', generate_state_method='trial', label_method='mean'):
         '''
         The final output is a tuning curve self.tuning with shape (len(self.sense_color), len(self.label)), whose column are sense colors, row are neurons labeled be their prefer colors. A measurement for accessing if the neuron has accute tuning curve is given by t_strength (shape = self.label). Closer to 1 means the neuron would only fire in response to one color. Closer to 0 means the neuron might not use for encoding colors
         input:
@@ -277,7 +275,7 @@ class Struct_analyzer(Labeler):
         else:
             os.abort('method for generating states can only be delay_ring or trial')
 
-        super().bin_input_color(bin_width=bin_width_color, nan_method=nan_method)
+        super().bin_input_color(bin_width=bin_width_color, nan_method=nan_method, avg_method=bin_width_color_avg_method)
 
         super().label_neuron(method=label_method)
 

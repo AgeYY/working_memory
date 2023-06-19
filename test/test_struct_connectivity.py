@@ -17,21 +17,29 @@ model_dir = model_dir_parent + 'model_0/'
 rule_name = 'color_reproduction_delay_unit' # rule name is fixed to color_reproduction_delay_unit. Actually this repo can also train another type of RNN with slightly different input format, but in this paper we only use color_reproduction_delay_unit
 prod_intervals=800 # set the delay time to 800 ms for ploring the trajectory
 n_colors=1000 # number of trials, each trial with different color
-tuned_thre = -0.0 # discard neurons with weak color selectivity, for example, a flat tuning curve
+#tuned_thre = -0.0 # discard neurons with weak color selectivity, for example, a flat tuning curve
+tuned_thre = 0.5 # discard neurons with weak color selectivity, for example, a flat tuning curve
+
 bin_width_color = 1 # We mesh color bins in calculating tuning curve.
+bin_width_color_avg_method = 'gaussian'
+
+#bin_width = None # connectivity of these neurons with similar preferred color would be averaged. Note bin_width_color is mesh for tuning curve, but this one is mesh for preferred color.
 bin_width = None # connectivity of these neurons with similar preferred color would be averaged. Note bin_width_color is mesh for tuning curve, but this one is mesh for preferred color.
 method = 'rnn_decoder' # use mean or max of firing rate to label neuron
 label_method = 'max' # use mean or max of firing rate to label neuron
 nan_method = 'remove' # how to handle nan ==> remove it
 generate_state_method = 'delay_ring'
-num_rnn_max = 50
+num_rnn_max = 5
 
 # doing some experiments to collect firing rates
 
 def compute_one_sub_connect(sub):
     str_ana = Struct_analyzer()
     str_ana.read_rnn_agent(sub)
-    str_ana.prepare_label(n_colors=n_colors, sigma_rec=0, sigma_x=0, batch_size=1, prod_intervals=prod_intervals, method=method, bin_width_color=bin_width_color, nan_method=nan_method, generate_state_method=generate_state_method, label_method=label_method)
+    _, _, _, t_strength = str_ana.prepare_label(n_colors=n_colors, sigma_rec=0, sigma_x=0, batch_size=1, prod_intervals=prod_intervals, method=method, bin_width_color=bin_width_color, nan_method=nan_method, generate_state_method=generate_state_method, label_method=label_method, bin_width_color_avg_method=bin_width_color_avg_method)
+    #plt.figure()
+    #plt.hist(t_strength)
+    #plt.show()
     weight_hh_pped, label_weight_pped = str_ana.output_weight(thresh=tuned_thre, bin_width=bin_width)
     bias_hh_pped, label_bias_pped = str_ana.output_bias(thresh=tuned_thre, bin_width=bin_width)
     return weight_hh_pped, label_weight_pped, bias_hh_pped, label_bias_pped
@@ -50,14 +58,35 @@ for filename in os.listdir(model_dir_parent):
     count += 1
     if count > num_rnn_max: break
 
-# plot label distribution
-plt.figure()
-label_weight_all_flat = np.array(label_weight_all).flatten()
-plt.hist(label_weight_all_flat, bins=100)
-plt.show()
+#weight_hh_all = [np.mean(weight_hh_all, axis=0)] # replace with avg
+#label_weight_all = [np.mean(label_weight_all, axis=0)] # replace with avg
+
+## draw weight matrix
+from matplotlib import colors
+divnorm=colors.TwoSlopeNorm(vcenter=0.)
+#plt.figure()
+#plt.imshow(np.mean(weight_hh_all, axis=0), cmap='seismic', norm=divnorm)
+#plt.show()
+#
+#plt.figure()
+#for label in label_weight_all:
+#    plt.scatter(np.arange(256), label)
+#plt.show()
+for i, weight in enumerate(weight_hh_all):
+    plt.figure()
+    plt.imshow(weight, cmap='seismic', norm=divnorm)
+
+    plt.figure()
+    plt.scatter(np.arange(len(label_weight_all[i])), label_weight_all[i])
+    plt.show()
+
+## plot label distribution
+#plt.figure()
+#label_weight_all_flat = np.array(label_weight_all).flatten()
+#plt.hist(label_weight_all_flat, bins=100)
+#plt.show()
 
 # compute excitation
-num_neuron = len( label_weight_all[0] )
 num_bin = 360 // bin_width_color
 
 color_bin = np.linspace(0, 360, num_bin + 1, endpoint=True) # +1 to include endpoint
@@ -68,9 +97,10 @@ group_rnn_counter = np.zeros(num_bin)
 sum_group_ext = np.zeros(num_bin)
 
 for i, weight_hh_i in enumerate(weight_hh_all):
+    num_neuron = len( label_weight_all[i] )
     idx = np.digitize(label_weight_all[i], color_bin) - 1 # map labels to bin index
 
-    weight_hh_i[weight_hh_i<0] = 0
+    #weight_hh_i[weight_hh_i<0] = 0
     sum_ext_i_index_by_label = np.sum(weight_hh_i, axis=0)
 
     sum_ext_i = np.zeros(num_bin)
@@ -79,14 +109,12 @@ for i, weight_hh_i in enumerate(weight_hh_all):
         sum_ext_i[idx[i]] += sum_ext_i_index_by_label[i]
         single_rnn_counter[idx[i]] += 1
 
-    avg_ext_i = sum_ext_i / single_rnn_counter
-    avg_ext_i = np.nan_to_num(avg_ext_i)
+    avg_ext_i = np.divide(sum_ext_i, single_rnn_counter, out=np.zeros_like(sum_ext_i), where=single_rnn_counter!=0)
 
     sum_group_ext += avg_ext_i
     group_rnn_counter += (single_rnn_counter >= 1)
 
-avg_group_ext = sum_group_ext / group_rnn_counter
-avg_group_ext = np.nan_to_num(avg_group_ext)
+avg_group_ext = np.divide(sum_group_ext, group_rnn_counter, out=np.zeros_like(sum_group_ext), where=group_rnn_counter!=0)
 from scipy.ndimage import gaussian_filter1d
 avg_group_ext = gaussian_filter1d(avg_group_ext, 3, mode='wrap')
 
