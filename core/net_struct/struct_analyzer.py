@@ -107,7 +107,7 @@ class Labeler(Agent_loader):
         self.fir_rate = np.transpose(self.fir_rate)
         return self.fir_rate.copy(), self.input_colors.copy()
 
-    def label_neuron(self, method='rnn_decoder'):
+    def label_neuron(self, method='rnn_decoder', label_by_mean=True):
         '''
         labeling neurons by their prefer colors
         output:
@@ -127,7 +127,12 @@ class Labeler(Agent_loader):
             self.label.append(pref_angle)
             self.t_strength.append(norm)
 
-        self.label = np.array(self.label)
+        if label_by_mean:
+            self.label = np.array(self.label)
+        else:
+            label_idx = np.argmax(fir_rate, axis=0)
+            self.label = input_colors[label_idx]
+
         self.t_strength = np.array(self.t_strength)
 
         return self.label.copy(), self.t_strength.copy()
@@ -249,7 +254,7 @@ class Struct_analyzer(Labeler):
     '''
     input a agent, output its weight and bias array with various forms
     '''
-    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, nan_method='remove', generate_state_method='trial'):
+    def prepare_label(self, n_colors=720, sigma_rec=None, sigma_x=None, batch_size=1, prod_intervals=200, method='rnn_decoder', bin_width_color=8, nan_method='remove', generate_state_method='trial', label_neuron_by_mean=True):
         '''
         The final output is a tuning curve self.tuning with shape (len(self.sense_color), len(self.label)), whose column are sense colors, row are neurons labeled be their prefer colors. A measurement for accessing if the neuron has accute tuning curve is given by t_strength (shape = self.label). Closer to 1 means the neuron would only fire in response to one color. Closer to 0 means the neuron might not use for encoding colors
         input:
@@ -257,6 +262,7 @@ class Struct_analyzer(Labeler):
           batch_size (int): the total number of trials is batch_size * number of colors
           bin_width_color : labeling neurons by population vector, so you need to make sure the chance of every color occur is equal. This is acheved by aveger input colors within small bin
           generate_state_method (str): methods of generating firing rate profile. delay_ring means draw a ring in pc1-pc2. trial means using different stimulus color
+          label_neuron_by_mean: bool. label neuron by mean or max of the tuning curves.
         output:
           state_list (n, hidden_size): n states each has possible different color information.
         '''
@@ -276,7 +282,7 @@ class Struct_analyzer(Labeler):
 
         super().bin_input_color(bin_width=bin_width_color, nan_method=nan_method)
 
-        super().label_neuron(method=method)
+        super().label_neuron(method=method, label_by_mean=label_neuron_by_mean)
 
         return self.fir_rate, self.input_colors, self.label, self.t_strength
 

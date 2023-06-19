@@ -101,17 +101,25 @@ class State_analyzer():
         vfir = (1 - np.tanh(states_temp)**2) * vs
         return vfir
 
-    def angle(self, states, fit_pca=False):
+    def angle(self, states, fit_pca=False, state_type='data'):
         '''
         find the angle of states in state space
         states (array [float] (batch_size, hidden_size)): neural states.
+        state_type: 'data' or 'vector'. Angle is computed by projecting state to the pc1-pc2 plane, then compute the angle within the pc1-pc2 plane. However, there are two types of projection. One is 'data' type, which is more traditional. A data wil be projected to the pc1-pc2 plane. Consider a fitted pca transformer with mean vector R and pc1, pc2 vector. the data vector will be firstly be substracted by R, then substracted vector will be projected to the pc1, pc2 vectors. Intuitively it's like projecting a data point to the pc1-pc2 plane. The second type is vector projection. In this case we want to directly compute the projection of that vector to two pcs, without substracting the mean.
         '''
         # fit the pca of delay ring
         if fit_pca:
             self.pca = PCA(n_components=2)
             self.pca.fit(self.sub.state[self.sub.epochs['interval'][1]])
 
-        states_pca = self.pca.transform(states)
+        if state_type == 'data':
+            states_pca = self.pca.transform(states)
+        elif state_type == 'vector':
+            states_pca = self.pca.components_ @ states.T
+            states_pca = states_pca.T
+        else:
+            print('The state type can only be data or vector')
+            quit()
         angle = np.arctan2(states_pca[:, 1], states_pca[:, 0]) # calculate the angle of states_pca
         angle = np.mod(angle, 2*np.pi) / 2.0 / np.pi * 360.0
         return angle
@@ -230,7 +238,7 @@ class State_analyzer():
         '''
         please self._gen_table before runing this function
         input:
-          x (array [float] (batch_size)): if input_var = 'color', x represents colors which value from 0 to 360.
+          x (array [float] (batch_size)): if input_var = 'color', x represents colors, or angle then, x is angle. both range from 0 to 360
         input_var (string): color or angle
         output:
           y (array [float] (batch_size)): angle of color
