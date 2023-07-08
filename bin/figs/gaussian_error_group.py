@@ -24,7 +24,6 @@ try:
 except:
     gen_data = True
 
-binwidth = 5 # binwidth for outdire and target dire
 noise_on = True
 prod_int_short = 200
 prod_int_long = 1000

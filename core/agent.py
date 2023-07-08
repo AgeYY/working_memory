@@ -92,6 +92,8 @@ class Agent():
     def do_batch_exp(self, prod_intervals=800, sigma_rec=None, sigma_x=None, batch_size=2000, sample_method='linspace', bin_size=1):
         '''
         do batch experiment
+        input:
+          sample_method: string or float. Currently string only supports linspace where the experiment input color will be sample by linspace from 0 to 360, with size equals to batch_size. If float, the input color will be fixed to this and repeatly do batch_size trials
         output:
           dire_df (dic): with report_dire, target_dire and error_dire
         '''
@@ -103,7 +105,7 @@ class Agent():
         if sample_method == 'linspace':
             ring_centers = np.linspace(0, 360, batch_size)
         else:
-            ring_centers = np.linspace(0, 360, batch_size)
+            ring_centers = np.ones(batch_size) * sample_method
 
         for i in range(int(batch_size / batch_size_unit)):
             ring_centers_unit = ring_centers[i*batch_size_unit:(i+1)*batch_size_unit]
