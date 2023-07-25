@@ -8,15 +8,25 @@ import matplotlib.pyplot as plt
 from core.agent import Agent, Agent_group
 from core.manifold.state_analyzer import State_analyzer
 
+def reject_outliers(data, m = 2.):
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d/mdev if mdev else np.zeros(len(d))
+    return data[s<m]
+
 prod_int = 800 # duration of the delay
 input_color = 40 # the input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
-batch_size = 41
-prior_sig = 90.0 # width of the piror
+batch_size = 5000
+delta = 1 # d color / d phi = ( (color + delta) - (color - delta) ) / ( phi(color + delta) - phi(color - delta) )
+prior_sig = 3.0 # width of the piror
 sigma_rec = None; sigma_x = None # set the noise to be default (training value)
+rej_m = 5.0
+
+print('example rnn in: ', prior_sig)
 
 rule_name = 'color_reproduction_delay_unit'
 model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
-model_dir = 'model_0/' # example RNN
+model_dir = 'model_2/' # example RNN
 sub_dir = 'noise_delta/'
 f = os.path.join(model_dir_parent, model_dir, sub_dir)
 sub = Agent(f, rule_name) # this is the outside agent creating data
@@ -32,7 +42,23 @@ end_of_delay_state = sub.state[sub.epochs['interval'][1]] # shape is [batch_size
 phii = sa.angle(end_of_delay_state, fit_pca=True) # Anyway, remember to fit_pca the first time use angle
 
 ### compute the dynamic dispersion
+phii = reject_outliers(phii, m=rej_m)
 dispersion = np.var(phii) # you may wanna move outlier, use circular norm or something
-print(dispersion)
+print('dynamic dispersion: ', dispersion)
 
+### color density
+phi = sa.angle_color(np.array([input_color - delta, input_color + delta]), input_var='color')
+dc_dphi = 2.0 * delta / (phi[1] - phi[0])
+print('color density: ', (dc_dphi)**2)
 
+### theoretical prediction
+print('theory: ', dispersion * (dc_dphi)**2)
+## exp
+
+### experimental prediction
+sub.do_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, sigma_x=sigma_x, ring_centers=input_color_list)
+sqe_exp = (sub.behaviour['target_color'] - sub.behaviour['report_color'])**2
+sqe_exp = reject_outliers(sqe_exp, m=rej_m)
+mse_exp = np.mean(sqe_exp)
+print('exp: ', mse_exp)
+#print(sub.behaviour['target_color'], sub.behaviour['report_color'])
