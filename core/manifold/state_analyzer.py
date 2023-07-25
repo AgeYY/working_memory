@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 class State_analyzer():
     ''' output properties of input states. The parameters of one object (prod_intervals, ...) should be fixed after one initialization. If you wanna change another parameters, please initialize a new object.'''
-    def __init__(self, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=0, n_colors=400):
+    def __init__(self, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=0, n_colors=1000):
         ''' parameters for generate delay ring
         n_colors: number of colors for pca_degree. This would be used only when pca_degree is None
         '''
