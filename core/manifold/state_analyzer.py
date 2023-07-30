@@ -3,6 +3,7 @@ from core.manifold.fix_point import Fix_point_finder, Hidden0_helper
 import numpy as np
 from core.agent import Agent
 from core.rnn_decoder import RNN_decoder
+from core.knn_decoder import KNN_decoder
 from sklearn.decomposition import PCA
 import core.tools as tools
 from core.color_error import Circular_operator
@@ -11,7 +12,7 @@ import matplotlib.pyplot as plt
 
 class State_analyzer():
     ''' output properties of input states. The parameters of one object (prod_intervals, ...) should be fixed after one initialization. If you wanna change another parameters, please initialize a new object.'''
-    def __init__(self, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=0, n_colors=400):
+    def __init__(self, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=0, n_colors=400, decoder_type='KNN_decoder'):
         ''' parameters for generate delay ring
         n_colors: number of colors for pca_degree. This would be used only when pca_degree is None
         '''
@@ -23,6 +24,7 @@ class State_analyzer():
             self.pca_degree = pca_degree
 
         self.n_colors = self.pca_degree.shape[0]
+        self.decoder_type = decoder_type
 
     def read_rnn_file(self, model_dir, rule_name):
         # read in the RNN from file
@@ -139,7 +141,7 @@ class State_analyzer():
         '''
         generate angle(color) function and its derivertive dydx(color)
         '''
-        self.color, self.angle_pca, self.state = gen_type_RNN(self.sub, prod_intervals=self.prod_intervals, pca_degree=self.pca_degree, sigma_rec=self.sigma_rec, sigma_x=self.sigma_x, n_colors=self.n_colors)
+        self.color, self.angle_pca, self.state, self.pca = gen_type_RNN(self.sub, prod_intervals=self.prod_intervals, pca_degree=self.pca_degree, sigma_rec=self.sigma_rec, sigma_x=self.sigma_x, n_colors=self.n_colors, decoder_type=self.decoder_type)
         self.color_for_d, self.dydx = diff_xy(self.color, self.angle_pca) # color, d(angle_pca)/d(color)
 
     def encode_space_density(self, states):
@@ -275,7 +277,7 @@ class State_analyzer():
 
         return y
 
-def gen_type_RNN(sub, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=0, n_colors=400, batch_size=1000):
+def gen_type_RNN(sub, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=0, n_colors=400, batch_size=1000, decoder_type='RNN_decoder'):
     '''
     generate data for one type of RNN
     output:
@@ -294,13 +296,14 @@ def gen_type_RNN(sub, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=
     ##### state in the hidimensional space and pca plane
     hidden_size = sub.state.shape[-1]
     hhelper = Hidden0_helper(hidden_size=hidden_size)
-    hidden0_ring_pca, hidden0_ring = hhelper.delay_ring(sub)
+    hidden0_ring_pca, hidden0_ring, pca = hhelper.delay_ring(sub, return_pca=True)
 
     ##### decode states from high dimesional space
-    rnn_de = RNN_decoder()
-    rnn_de.read_rnn_agent(sub)
+    if decoder_type == 'RNN_decoder': de = RNN_decoder()
+    else: de = KNN_decoder()
+    de.read_rnn_agent(sub)
     
-    report_color_ring = rnn_de.decode(hidden0_ring)
+    report_color_ring = de.decode(hidden0_ring)
     deg_pca = np.arctan2(hidden0_ring_pca[:, 1], hidden0_ring_pca[:, 0]) # calculate the angle of hidden0_ring_pca
     deg_pca = np.mod(deg_pca, 2*np.pi) / 2.0 / np.pi * 360.0
 
@@ -308,7 +311,7 @@ def gen_type_RNN(sub, prod_intervals=800, pca_degree=None, sigma_rec=0, sigma_x=
     color = report_color_ring # the corresponding colors
     state = hidden0_ring
 
-    return color, angle_pca, state
+    return color, angle_pca, state, pca
 
 def diff_xy(x, y, d_abs=True, step=1):
     cptor = Circular_operator(0, 360)
@@ -324,4 +327,5 @@ def diff_xy(x, y, d_abs=True, step=1):
     order = np.argsort(x[step:])
     x_order = x[step:][order]
     dydx_order = dydx[order]
+
     return x_order, dydx_order
