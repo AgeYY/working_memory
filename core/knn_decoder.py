@@ -7,7 +7,7 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsRegressor
 
 class KNN_decoder():
-    def __init__(self, n_neighbors=2, pca_processing_n_com=2, knn_weights='distance', batch_size=2000, test_size=0.33, sigma_rec=0, sigma_x=0, prod_int=20, random_seed=42):
+    def __init__(self, n_neighbors=5, pca_processing_n_com=2, knn_weights='distance', batch_size=2000, test_size=0.33, sigma_rec=0, sigma_x=0, prod_int=20, random_seed=42):
         '''
         knn_decoder. Use input color as label, neural states at the begining of the delay as feature map, to map feature to label.
         input:
@@ -49,7 +49,7 @@ class KNN_decoder():
     def _generate_dataset(self):
         y = np.linspace(0, 360, self.batch_size) # input color
         self.sub.do_exp(prod_intervals=self.prod_int, ring_centers=y, sigma_rec=self.sigma_rec, sigma_x=self.sigma_x)
-        y = self.sub.behaviour['report_color'] # use the report to avoid the effect of drift
+        y = self.sub.behaviour['target_color'] # use the report to avoid the effect of drift
         X= self.sub.state[self.sub.epochs['interval'][0]] # shape is [batch_size, hidden_size], use the begining of the delay
         y_rad = np.deg2rad(y)
         y_cs = np.array([np.cos(y_rad), np.sin(y_rad)]).T # map to two linear function
