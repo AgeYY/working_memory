@@ -18,13 +18,14 @@ prod_int = 800 # duration of the delay
 input_color = 40 # the input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
 batch_size = 5000
 delta = 3 # d color / d phi = ( (color + delta) - (color - delta) ) / ( phi(color + delta) - phi(color - delta) )
-prior_sig = 20.0 # width of the piror
+prior_sig = 15.0 # width of the piror
 sigma_rec = None; sigma_x = None # set the noise to be default (training value)
 rej_m = 5.0
 
 print('example rnn in: ', prior_sig)
 
 rule_name = 'color_reproduction_delay_unit'
+#model_dir_parent = "../core/model/model_" + str(prior_sig) + '_no_noise_perception' + "/color_reproduction_delay_unit/"
 model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
 model_dir = 'model_0/' # example RNN
 sub_dir = 'noise_delta/'
@@ -34,6 +35,7 @@ sub = Agent(f, rule_name) # this is the outside agent creating data
 ### obtain angle of common color phi_c
 sa = State_analyzer()
 sa.read_rnn_file(f, rule_name) # I strongly recommand using read_rnn_file instead of creating a agent outside (read_rnn_agent). Agent used within a state_analyzer should not be used outside.
+exit()
 
 ### obtain angle phi_i at the end of delay in repeated trials
 input_color_list = np.ones(batch_size) * input_color # repeatly run common color trials

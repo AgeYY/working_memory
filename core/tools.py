@@ -455,3 +455,23 @@ def complex_mat2arr(mat):
     arr_real = np.real(arr)
     arr_imag = np.imag(arr)
     return arr_real, arr_imag
+
+def smooth_y(x, y, window_size=5):
+    """
+    Smooth y values using a simple moving average with a specified window size.
+    The resulting x and y arrays are shortened by the window size - 1.
+
+    Parameters:
+    - x: numpy array representing the original x values
+    - y: numpy array representing the original y values
+    - window_size: size of the moving average window
+
+    Returns:
+    - x_smoothed: x values corresponding to the smoothed y values
+    - y_smoothed: smoothed y values
+    """
+    # Calculate the simple moving average
+    y_smoothed = np.convolve(y, np.ones(window_size)/window_size, mode='valid')
+    x_smoothed = x[(window_size-1)//2: -((window_size-1)//2)]
+
+    return x_smoothed, y_smoothed

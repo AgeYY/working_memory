@@ -9,6 +9,7 @@ import core.tools as tools
 from core.color_error import Circular_operator
 import torch
 import matplotlib.pyplot as plt
+from core.tools import smooth_y
 
 class State_analyzer():
     ''' output properties of input states. The parameters of one object (prod_intervals, ...) should be fixed after one initialization. If you wanna change another parameters, please initialize a new object.'''
@@ -143,6 +144,10 @@ class State_analyzer():
         '''
         self.color, self.angle_pca, self.state, self.pca = gen_type_RNN(self.sub, prod_intervals=self.prod_intervals, pca_degree=self.pca_degree, sigma_rec=self.sigma_rec, sigma_x=self.sigma_x, n_colors=self.n_colors, decoder_type=self.decoder_type)
         self.color_for_d, self.dydx = diff_xy(self.color, self.angle_pca) # color, d(angle_pca)/d(color)
+        #plt.figure()
+        #x, y = smooth_y(self.color_for_d, self.dydx)
+        #plt.scatter(x, y)
+        #plt.show()
 
     def encode_space_density(self, states):
         '''
