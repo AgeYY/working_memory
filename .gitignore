@@ -1,3 +1,4 @@
 err
 __pycache__/
 out
+figs/*

@@ -1,5 +1,6 @@
 server_command.sh
 server_command.py
+figs/*
 *.pyc
 output
 .ipynb_checkpoints/
