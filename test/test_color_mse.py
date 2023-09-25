@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from core.agent import Agent, Agent_group
 from core.manifold.state_analyzer import State_analyzer
-from brokenaxes import brokenaxes
 import pickle
 import math
 from core.tools import find_nearest, mean_se
@@ -20,7 +19,7 @@ def removeOutliers(a, outlierConstant=1.5):
     quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
     return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]
 
-def color_mse(input_color,f,prior_sig,batch_size=5000):
+def color_mse(input_color,f,prior_sig,batch_size=500):
 
     mse_all = []
     for trial in range(200):
@@ -57,7 +56,7 @@ def color_mse(input_color,f,prior_sig,batch_size=5000):
 
 # Biased prior model
 mse_color_biased = []
-model_dir_parent = "../core/model_rec0.4/model_" + str(17.5) + "/color_reproduction_delay_unit/"
+model_dir_parent = "../core/model/model_" + str(17.5) + "/color_reproduction_delay_unit/"
 sub_dir = 'noise_delta/'
 for i in range(50):
     model_dir = 'model_{}/'.format(i)  # example RNN
@@ -74,7 +73,7 @@ with open('../bin/figs/fig_data/mse_color_17.5_rec0.4.txt','wb') as fp:
 # Uniform prior
 mse_color_uniform = []
 rule_name = 'color_reproduction_delay_unit'
-model_dir_parent = "../core/model_rec0.4/model_" + str(90.0) + "/color_reproduction_delay_unit/"
+model_dir_parent = "../core/model/model_" + str(90.0) + "/color_reproduction_delay_unit/"
 sub_dir = 'noise_delta/'
 for i in range(50):
     model_dir = 'model_{}/'.format(i)  # example RNN

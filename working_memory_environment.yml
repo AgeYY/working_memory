@@ -1,0 +1,21 @@
+name: working_memory
+channels:
+  - defaults
+dependencies:
+  - python==3.8.8
+  - scikit-image==0.19.2
+  - matplotlib==3.3.4
+  - scikit-learn==0.23.2
+  - seaborn==0.11.2
+  - tornado==6.1
+  - imageio==2.9.0
+  - pillow==8.2.0
+  - numba==0.53.1
+  - colormath==3.0.0
+  - pytest==6.2.3
+  - tqdm==4.59.0
+  - scipy==1.7.3
+  - pandas==1.2.4
+  - mpi4py
+# remember to install pytorch by
+# mamba install pytorch==1.10.0 torchvision==0.11.1 torchaudio==0.10.0 cudatoolkit==11.3.1 -c pytorch

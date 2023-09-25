@@ -27,8 +27,8 @@ rule_name = "color_reproduction_delay_tri"
 hp_replace = {
     'prod_interval': [0, 1000],
     'l2_jac': -1,
-    'sigma_rec': 0.2, # 0.6 is a bit small
-    'sigma_x': 0.2,
+    'sigma_rec': 0.4, # 0.6 is a bit small
+    'sigma_x': 0.4,
     'num_unit': 2,
     'n_input': 3,
     'n_output': 2,
@@ -70,6 +70,7 @@ def step_1(hp_replace, rule_name, i, device_id, model_base_uniform, is_cuda):
     hp_replace_temp = hp_replace.copy()
     hp_replace_temp.update({
         'prod_interval': [0, 0],
+        'sig': 90.0,
         'sigma_rec': 0.,
         'sigma_x': 0,
         'l2_jac': -0.1,  # negative means no penalty
@@ -86,6 +87,7 @@ def step_2(hp_replace, rule_name, i, device_id, model_base_uniform, is_cuda):
     hp_replace_temp.update({
         'sigma_rec': 0.,
         'sigma_x': 0,
+        'sig': 90.0,
         'l2_jac': -0.1,  # negative means no penalty
         'l2_weight': -0.1,
         'l2_firing_rate': -0.1,
@@ -102,6 +104,8 @@ def step_3(hp_replace, rule_name, i, device_id, model_base_uniform, is_cuda, noi
 
     err_tol = 1e-5
     noise_arr = np.arange(noise_step, hp_replace_temp['sigma_rec'], noise_step)
+    if len(noise_arr) == 0:
+        noise_arr = np.append(noise_arr, hp_replace_temp['sigma_rec'])
     if np.abs(noise_arr[-1] - hp_replace_temp['sigma_rec']) >= err_tol: # add end point
         noise_arr = np.append(noise_arr, hp_replace_temp['sigma_rec'])
 

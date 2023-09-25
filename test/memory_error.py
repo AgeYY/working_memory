@@ -6,7 +6,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from core.agent import Agent, Agent_group
 
-
+def removeOutliers(a, outlierConstant=1.5):
+    upper_quartile = np.percentile(a, 75)
+    lower_quartile = np.percentile(a, 25)
+    IQR = (upper_quartile - lower_quartile) * outlierConstant # 1.5
+    quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
+    return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]
 
 ############ compute the average error (averaged on prior)
 
@@ -21,22 +26,26 @@ def memory_error(prod_int, prior_sig, batch_size, color_sampler):
         sub = Agent(f, rule_name)
 
         input_color_set = color_sampler.out_color_degree(batch_size)
+        #plt.hist(input_color_set, bins=40)
+        #plt.show()
 
         sub.do_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, sigma_x=sigma_x, ring_centers=input_color_set)
 
         color_error = Color_error()
         color_error.add_data(sub.behaviour['report_color'], sub.behaviour['target_color'])
         sub_error = color_error.calculate_error() # circular substraction
+        mse_error = sub_error**2
+        mse_error = removeOutliers(mse_error)
+        mse_sub = np.mean(mse_error)
 
-        mse_sub = np.linalg.norm(sub_error)**2 / len(sub_error)
         std_sub_list.append(np.sqrt(mse_sub))
     return std_sub_list
 
 #################### Main
-prior_sig_bias = 10.0
+prior_sig_bias = 15.0
 prior_sig_uniform = 90.0
 prod_int = 800 # duration of the delay
-batch_size = 500 # number of sampled trials
+batch_size = 5000 # number of sampled trials
 sigma_rec = None; sigma_x = None # set the noise to be default (training value)
 #################### Parameters
 
