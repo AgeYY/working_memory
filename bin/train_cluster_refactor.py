@@ -19,19 +19,19 @@ n_device = torch.cuda.device_count()
 
 # Hyperparameters configuration
 sig_list = [17.5, 90.0]
-n_models = 10
+n_models = 2
 model_base_dir = '../core/model/'
 noise_step = 0.4 # in step 3, we increase the sigma_rec noise progressively by noise_step
 is_cuda = True
-rule_name = "color_reproduction_delay_unit"
+rule_name = "color_reproduction_delay_tri"
 hp_replace = {
     'prod_interval': [0, 1000],
     'l2_jac': -1,
-    'sigma_rec': 1.2, # 0.6 is a bit small
-    'sigma_x': 0.,
-    'num_unit': 12,
-    'n_input': 13,
-    'n_output': 12,
+    'sigma_rec': 0.2, # 0.6 is a bit small
+    'sigma_x': 0.2,
+    'num_unit': 2,
+    'n_input': 3,
+    'n_output': 2,
     'n_rnn': 256,
     'bias_method': 'vonmises',
     'stop_color_error': 1,

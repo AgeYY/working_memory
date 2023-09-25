@@ -34,7 +34,7 @@ for filename in os.listdir(model_dir_parent):
     mse_sub_list.append(mse_sub)
 
 mean_mse = np.mean(mse_sub_list)
-print(mean_mse)
+print('memory error (mse) of all RNNs with prior = {} at input color = {} is {}'.format(prior_sig, input_color, mean_mse))
 
 
 ############ compute the average error (averaged on prior)
@@ -60,4 +60,4 @@ for filename in os.listdir(model_dir_parent):
     mse_sub_list.append(mse_sub)
 
 mean_mse = np.mean(mse_sub_list)
-print(mean_mse)
+print('memory error (mse) of all RNNs with prior = {} at on average of all input is {}'.format(prior_sig, mean_mse))
