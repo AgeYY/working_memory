@@ -21,8 +21,8 @@ try:
     sub_dir = sys.argv[3]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
-    sub_dir = '/model_16/noise_delta'
+    model_dir = '../core/model/model_12.5/color_reproduction_delay_unit/'
+    sub_dir = '/model_3/noise_delta'
 
 try:
     if sys.argv[4] == 'Y': # set false so it will not generate data
@@ -31,6 +31,7 @@ try:
         gen_data = False
 except:
     gen_data = False
+gen_data = True
 
 prod_intervals=800 # set the delay time to 800 ms for ploring the trajectory
 pca_degree = np.arange(0, 360, 20) # Plot the trajectories of these colors
@@ -54,7 +55,7 @@ mplot._pca_fit(3, start_time=sub['epochs']['stim1'][0] - 1, end_time=sub['epochs
 #plot_range = [[-12, 12], [-12, 12], [-8, 8]] # the limits of x, y, and z axis
 
 for epoch_name in ['stim1', 'interval', 'go_cue', 'response', 'all']:
-    fig = plt.figure(figsize=(5, 3))
+    fig = plt.figure(figsize=(3, 3))
     axext = fig.add_subplot(111, projection='3d')
 
     if epoch_name == 'all':
@@ -75,6 +76,7 @@ for epoch_name in ['stim1', 'interval', 'go_cue', 'response', 'all']:
     ax.set_yticks([])
     ax.set_zticks([])
 
+    fig.tight_layout()
     fig.savefig('./figs/fig_collect/manifold_' + epoch_name + '.pdf', format='pdf')
     #plt.show()
 
@@ -84,4 +86,4 @@ _, ax = mplot.pca_3d_plot(start_time=sub['epochs']['interval'][1], end_time=sub[
 ax.set_xticks([])
 ax.set_yticks([])
 ax.set_zticks([])
-#plt.show()
+plt.show()

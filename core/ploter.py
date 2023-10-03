@@ -31,9 +31,15 @@ def plot_layer_boxplot_helper(score_exps, layer_order, color=GREY_DARK, ax=None,
 
     lo_order_id = []
     score_list = []
+    jitter_color_list = []
     for reg, value in score_exps.items():
         lo_order_id.append(layer_order[reg])
         score_list.append(value)
+
+        if type(jitter_color) == dict:
+            jitter_color_list.append(jitter_color[reg])
+        else:
+            jitter_color_list.append(jitter_color)
 
     box_kwarg_default = {'positions': lo_order_id, 'showfliers': False, 'showcaps': False, 'medianprops': medianprops, 'whiskerprops': whisprops, 'boxprops': boxprops, 'patch_artist': patch_artist}
     box_kwarg.update(box_kwarg_default)
@@ -46,8 +52,8 @@ def plot_layer_boxplot_helper(score_exps, layer_order, color=GREY_DARK, ax=None,
 
         # Add jittered dots ----------------------------------------------
         #for x, y, color in zip(x_jit, score_list, COLOR_SCALE):
-        for x, y in zip(x_jit, score_list):
-            ax.scatter(x, y, s=jitter_s, alpha=jitter_alpha, c=jitter_color)
+        for x, y, c in zip(x_jit, score_list, jitter_color_list):
+            ax.scatter(x, y, s=jitter_s, alpha=jitter_alpha, c=c)
 
     ax.set_xticklabels(layer_order.keys())
     ax.spines['left'].set_linewidth(1.5)
