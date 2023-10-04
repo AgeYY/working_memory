@@ -15,7 +15,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--model_dir', default="../core/model/model_25.0/color_reproduction_delay_unit/", type=str,
+parser.add_argument('--model_dir', default="../core/model/model_90.0/color_reproduction_delay_unit/", type=str,
                     help='models')
 parser.add_argument('--rule_name', default='color_reproduction_delay_unit', type=str,
                     help='RNN and architeture type, fix to the default throught out this paper')
@@ -66,6 +66,7 @@ def gen_data_func():
     rnn_de.read_rnn_agent(sub)
 
     hidden0_grid_pca, hidden0_grid = hhelper.mesh_pca_plane(sub, xlim, ylim, edge_batch_size)
+    print(xlim, ylim, edge_batch_size, hidden0_grid)
 
     # color of the grid
     report_color_grid = rnn_de.decode(hidden0_grid)
@@ -107,6 +108,7 @@ fig = plt.figure(figsize=(3, 3))
 ax = fig.add_subplot(111)
 ##### decode backgroud
 ax.scatter(hidden0_grid_pca[:, 0], hidden0_grid_pca[:, 1], c=colors_grid, alpha=1, s=60)
+'''
 ##### velocity field
 def disentangle(position):
     edge = int(np.sqrt(position.shape[0]))
@@ -116,10 +118,10 @@ def disentangle(position):
 
 x_pca, y_pca = disentangle(hidden0_vel_pca)
 vel_x_pca, vel_y_pca = disentangle(vel_pca)
-
 speed = np.sqrt(vel_x_pca**2 + vel_y_pca**2)
 lw = 5 * speed / 20
 ax.streamplot(x_pca[0, :], y_pca[:, 0], vel_x_pca, vel_y_pca, density=stream_density, maxlength=stream_maxlength, linewidth=lw, color='b', integration_direction='both', arrowsize=arrowsize,  arrowstyle='->')
+'''
 
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -141,4 +143,4 @@ fig.savefig(out_dir, format='png', dpi=900)
 #out_dir = out_dir[:-3] + 'eps'
 #fig.savefig(out_dir, format='eps')
 
-#plt.show()
+plt.show()

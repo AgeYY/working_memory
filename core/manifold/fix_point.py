@@ -118,20 +118,21 @@ class Hidden0_helper():
         hidden0 = hidden0 + noise
         return hidden0
 
-    def mesh_pca_plane(self, sub, xlim=[-10, 10], ylim=[-10, 10], edge_batch_size=10):
+    def mesh_pca_plane(self, sub, xlim=[-10, 10], ylim=[-10, 10], edge_batch_size=10, period_name='interval'):
         '''
         mesh on the hyperplane constructed by the first two principle components
         inputs:
           sub (Agent): has finished at least one experiment, so that we know where the hyperplane should be
           xlim, ylim (array [float] (2)): xlimits and y limits in the pca plane
           edge_batch_size (integer): the number of points in each edge. So the total points would be edge_batch_size^2
+          period_name (str): 'fix', 'stim1', 'interval' means delay, 'go_cue' or 'response'. This function will fit pc1-pc2 depends on the end of the period.
         outputs:
           cords_pca (array [float] (edge_batch_size^2, 2)): points in the pca plane
           cords_origin (array [float] (edge_batch_size^2, hidden_size)): each row is a state point
         '''
         n_components = 2
         pca = PCA(n_components=n_components)
-        pca.fit(sub.state[sub.epochs['interval'][1]])
+        pca.fit(sub.state[sub.epochs[period_name][1] - 1])
         x_mesh = np.linspace(xlim[0], xlim[1], edge_batch_size)
         y_mesh = np.linspace(ylim[1], ylim[0], edge_batch_size)
         x_mesh, y_mesh = np.meshgrid(x_mesh, y_mesh)
