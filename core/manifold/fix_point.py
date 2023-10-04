@@ -176,13 +176,17 @@ class Hidden0_helper():
 
         return cords_pca, cords_state_origin
 
-    def delay_ring(self, sub, sigma_init=0, batch_size=1000):
+    def delay_ring(self, sub, sigma_init=0, batch_size=1000, period_name='interval'):
         '''
         At the end of delay, the manifold is a ring (although not perfect). Delay_ring is a ring on the pc1-pc2 plane. Its radius is the same as the points on the end of delay.  We sample points on delay ring, and map it back to the original high dimensional space.
+        input:
+          sigma_init (float): noise added to the ring
+          period_name (str): 'fix', 'stim1', 'interval' means delay, 'go_cue' or 'response'. This function will fit pc1-pc2 depends on the end of the period.
+          batch_size (int): number of points sampled from the ring
         '''
         n_components = 2
         pca = PCA(n_components=n_components)
-        pca.fit(sub.state[sub.epochs['interval'][1]])
+        pca.fit(sub.state[sub.epochs[period_name][1] - 1])
 
         # find the radius
         hidden0_ring = self.noisy_ring(sub, sigma_init=0)
