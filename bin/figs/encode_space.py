@@ -21,8 +21,8 @@ try:
     out_dir = sys.argv[5]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
-    sub_dir = '/model_16/noise_delta'
+    model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
+    sub_dir = '/model_0/noise_delta'
     out_dir = './figs/fig_collect/angle'
 
 try:
@@ -33,6 +33,7 @@ try:
 except:
     gen_data = False
 ##################################################
+gen_data = True
 
 hidden_size = 256
 prod_intervals = 800
@@ -95,28 +96,6 @@ def diff_xy(x, y):
 ##### plot figure
 sns.set_theme()
 sns.set_style("ticks")
-def plot_figure(x_order, dydx_order, ax):
-    plt.plot(x_order, dydx_order)
-
-    # remove label
-    ax.set_xlabel('')
-    ax.set_ylabel('')
-    
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.grid(False)
-    
-    ax.set_xticks([0, 180, 360])
-    
-    ax.set_xlabel(r'Decoded color $\theta$')
-    ax.set_ylabel(r'$d\phi/d\theta$')
-    
-    ax.axhline(y = 1, linestyle = '--', linewidth = 2, color = 'red')
-
-    for cc_i in common_color:
-        idx = find_nearest(x_order, cc_i)
-        ax.scatter(x_order[idx], dydx_order[idx], c='red')
-    return ax
 
 x_delta = data_df['report_color_ring_delta'].to_numpy()
 y_delta = data_df['deg_pca_delta'].to_numpy()
@@ -160,8 +139,8 @@ x_delta = x_delta // density_bin_size * density_bin_size + density_bin_size / 2.
 x, mean_y, se_y = mean_se(x_delta, dydx_delta, remove_outlier=True, epsilon=0.1, sd=True)
 
 #plot_figure(x_delta, dydx_delta, ax=ax)
-ax.fill_between(x, mean_y + se_y, mean_y - se_y, alpha=0.5)
-ax.plot(x, mean_y)
+ax.fill_between(x, mean_y + se_y, mean_y - se_y, alpha=0.5, color='b')
+ax.plot(x, mean_y, color='b')
 
 ax.set_xlabel('')
 ax.set_ylabel('')
@@ -172,16 +151,16 @@ ax.grid(False)
     
 ax.set_xticks([0, 180, 360])
     
-ax.set_xlabel(r'Decoded color $\theta$')
-ax.set_ylabel(r'$d\phi/d\theta$')
+ax.set_xlabel(r'Color $\phi$')
+ax.set_ylabel(r'Angular Occupation $d\theta/d\phi$')
     
-ax.set_ylim([0.5, 1.7])
+ax.set_ylim([0., 3.0])
 
 ax.axhline(y = 1, linestyle = '--', linewidth = 1, color = 'k')
 for cc_i in common_color:
-    ax.axvline(x = cc_i, linestyle = '--', linewidth = 1, color = 'red')
+    ax.axvline(x = cc_i, linestyle = '--', linewidth = 1, color = 'black')
 
 
-fig.savefig(out_dir + '_density.pdf', format='pdf')
+fig.savefig(out_dir + '_density.svg', format='svg')
 
-#plt.show()
+plt.show()

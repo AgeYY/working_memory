@@ -17,11 +17,11 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--model_dir', default="../core/model/model_25.0/color_reproduction_delay_unit/", type=str,
+parser.add_argument('--model_dir', default="../core/model/model_90.0/color_reproduction_delay_unit/", type=str,
                     help='models')
 parser.add_argument('--rule_name', default='color_reproduction_delay_unit', type=str,
                     help='RNN and architeture type, fix to the default throught out this paper')
-parser.add_argument('--sub_dir', default="/model_0/noise_delta", type=str,
+parser.add_argument('--sub_dir', default="/model_3/noise_delta", type=str,
                     help='example model')
 parser.add_argument('--prod_interval', default=800, type=int,
                     help='delay epoch length')
@@ -116,12 +116,12 @@ for i, jac in enumerate(jacs):
                 plot_vec(vec, i)
 
 
-fig_2d.savefig(fig_out_path + "_delay.pdf", format='pdf')
+fig_2d.savefig(fig_out_path + "_delay.svg", format='svg')
 
 fig_stim = plt.figure(figsize=(3, 3))
 ax_stim = fig_stim.add_subplot(111)
 _, ax_stim = mplot.pca_2d_plot(start_time=sub.epochs['stim1'][0] - 1, end_time=sub.epochs['stim1'][1], ax = ax_stim, alpha=alpha, do_pca_fit=True, end_point_size=100)
 plt.axis('off')
-fig_stim.savefig(fig_out_path + "_stim.pdf", format='pdf')
+fig_stim.savefig(fig_out_path + "_stim.svg", format='svg')
 
 #plt.show()

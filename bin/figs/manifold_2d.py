@@ -18,11 +18,11 @@ import argparse
 # Instantiate the parser
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--model_dir', default="../core/model/model_25.0/color_reproduction_delay_unit/", type=str,
+parser.add_argument('--model_dir', default="../core/model/model_12.5/color_reproduction_delay_unit/", type=str,
                     help='models')
 parser.add_argument('--rule_name', default='color_reproduction_delay_unit', type=str,
                     help='RNN and architeture type, fix to the default throught out this paper')
-parser.add_argument('--sub_dir', default="/model_0/noise_delta", type=str,
+parser.add_argument('--sub_dir', default="/model_3/noise_delta", type=str,
                     help='example model')
 parser.add_argument('--prod_interval', default=1000, type=int,
                     help='delay epoch length')

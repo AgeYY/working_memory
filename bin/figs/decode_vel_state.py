@@ -12,10 +12,12 @@ import core.tools as tools
 from core.manifold.state_analyzer import State_analyzer
 from core.manifold.fix_point import Hidden0_helper
 import argparse
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--model_dir', default="../core/model/model_25.0/color_reproduction_delay_unit/", type=str,
+parser.add_argument('--model_dir', default="../core/model/model_90.0/color_reproduction_delay_unit/", type=str,
                     help='models')
 parser.add_argument('--rule_name', default='color_reproduction_delay_unit', type=str,
                     help='RNN and architeture type, fix to the default throught out this paper')
@@ -108,6 +110,7 @@ ax = fig.add_subplot(111)
 ##### decode backgroud
 ax.scatter(hidden0_grid_pca[:, 0], hidden0_grid_pca[:, 1], c=colors_grid, alpha=1, s=60)
 ##### velocity field
+'''
 def disentangle(position):
     edge = int(np.sqrt(position.shape[0]))
     x = position[:, 0].reshape(edge, edge)
@@ -120,6 +123,7 @@ vel_x_pca, vel_y_pca = disentangle(vel_pca)
 speed = np.sqrt(vel_x_pca**2 + vel_y_pca**2)
 lw = 5 * speed / 20
 ax.streamplot(x_pca[0, :], y_pca[:, 0], vel_x_pca, vel_y_pca, density=stream_density, maxlength=stream_maxlength, linewidth=lw, color='b', integration_direction='both', arrowsize=arrowsize,  arrowstyle='->')
+'''
 
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -142,3 +146,44 @@ fig.savefig(out_dir, format='png', dpi=900)
 #fig.savefig(out_dir, format='eps')
 
 #plt.show()
+
+
+def plot_custom_colorbar(values, rgba_colors, label='Colorbar Label', tick_fontsize=12):
+    """
+    Create a custom colorbar using provided values and RGBA colors.
+
+    Args:
+        values (array-like): List of values.
+        rgba_colors (array-like): List of RGBA colors corresponding to the values.
+        label (str): Label for the colorbar.
+        tick_fontsize (int): Font size for tick labels in the colorbar.
+
+    Returns:
+        None
+    """
+    # Create a figure and axis
+    fig, ax = plt.subplots()
+
+    # Create a ScalarMappable object for mapping values to colors
+    norm = plt.Normalize(min(values), max(values))
+
+    # Create a custom colormap based on the provided RGBA colors
+    custom_cmap = ListedColormap(rgba_colors)
+
+    sm = plt.cm.ScalarMappable(cmap=custom_cmap, norm=norm)
+    sm.set_array([])
+
+    # Create a colorbar
+    cbar = plt.colorbar(sm, ax=ax, location='left')
+    cbar.set_label(label)
+
+    # Adjust the colorbar's appearance
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+
+    return fig, ax
+
+color_list = np.linspace(0, 360, 100)
+rgba_color = deg_color.out_color(color_list, fmat='RGBA')
+fig, ax = plot_custom_colorbar(color_list, rgba_color, label='Custom Colorbar', tick_fontsize=14)
+fig.savefig('./figs/fig_collect/decode_plane_cbar_' + file_label + '.pdf')
+plt.show()
