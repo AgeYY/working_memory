@@ -10,6 +10,7 @@ import pandas as pd
 from scipy.linalg import circulant
 from numpy.linalg import matrix_power
 from scipy.stats.mstats import mquantiles
+from sklearn.decomposition import PCA
 
 from . import default
 
@@ -455,3 +456,30 @@ def complex_mat2arr(mat):
     arr_real = np.real(arr)
     arr_imag = np.imag(arr)
     return arr_real, arr_imag
+
+def state_to_angle(states, pca=None, state_type='data', verbose=False):
+    '''
+    compute the angle of each states in their pc1-pc2 plane
+    state (array shape [n_states, n_features])
+    state_type: 'data' or 'vector'. Angle is computed by projecting state to the pc1-pc2 plane, then compute the angle within the pc1-pc2 plane. However, there are two types of projection. One is 'data' type, which is more traditional. A data wil be projected to the pc1-pc2 plane. Consider a fitted pca transformer with mean vector R and pc1, pc2 vector. the data vector will be firstly be substracted by R, then substracted vector will be projected to the pc1, pc2 vectors. Intuitively it's like projecting a data point to the pc1-pc2 plane. The second type is vector projection. In this case we want to directly compute the projection of that vector to two pcs, without substracting the mean.
+    verbose: if true, output fitted pca as well
+    '''
+    if pca is None:
+        pca = PCA(n_components=2)
+        pca.fit(states)
+
+    if state_type == 'data':
+        states_pca = pca.transform(states)
+    elif state_type == 'vector':
+        states_pca = pca.components_ @ states.T
+        states_pca = states_pca.T
+    else:
+        print('The state type can only be data or vector')
+        quit()
+    angle = np.arctan2(states_pca[:, 1], states_pca[:, 0]) # calculate the angle of states_pca
+    angle = np.mod(angle, 2*np.pi) / 2.0 / np.pi * 360.0
+
+    if verbose:
+        return angle, pca
+    else:
+        return angle

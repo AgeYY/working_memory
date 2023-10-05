@@ -68,6 +68,7 @@ def gen_data_func():
     rnn_de.read_rnn_agent(sub)
 
     hidden0_grid_pca, hidden0_grid = hhelper.mesh_pca_plane(sub, xlim, ylim, edge_batch_size)
+    print(xlim, ylim, edge_batch_size, hidden0_grid)
 
     # color of the grid
     report_color_grid = rnn_de.decode(hidden0_grid)
@@ -109,8 +110,8 @@ fig = plt.figure(figsize=(3, 3))
 ax = fig.add_subplot(111)
 ##### decode backgroud
 ax.scatter(hidden0_grid_pca[:, 0], hidden0_grid_pca[:, 1], c=colors_grid, alpha=1, s=60)
-##### velocity field
 '''
+##### velocity field
 def disentangle(position):
     edge = int(np.sqrt(position.shape[0]))
     x = position[:, 0].reshape(edge, edge)
@@ -119,7 +120,6 @@ def disentangle(position):
 
 x_pca, y_pca = disentangle(hidden0_vel_pca)
 vel_x_pca, vel_y_pca = disentangle(vel_pca)
-
 speed = np.sqrt(vel_x_pca**2 + vel_y_pca**2)
 lw = 5 * speed / 20
 ax.streamplot(x_pca[0, :], y_pca[:, 0], vel_x_pca, vel_y_pca, density=stream_density, maxlength=stream_maxlength, linewidth=lw, color='b', integration_direction='both', arrowsize=arrowsize,  arrowstyle='->')
@@ -145,45 +145,4 @@ fig.savefig(out_dir, format='png', dpi=900)
 #out_dir = out_dir[:-3] + 'eps'
 #fig.savefig(out_dir, format='eps')
 
-#plt.show()
-
-
-def plot_custom_colorbar(values, rgba_colors, label='Colorbar Label', tick_fontsize=12):
-    """
-    Create a custom colorbar using provided values and RGBA colors.
-
-    Args:
-        values (array-like): List of values.
-        rgba_colors (array-like): List of RGBA colors corresponding to the values.
-        label (str): Label for the colorbar.
-        tick_fontsize (int): Font size for tick labels in the colorbar.
-
-    Returns:
-        None
-    """
-    # Create a figure and axis
-    fig, ax = plt.subplots()
-
-    # Create a ScalarMappable object for mapping values to colors
-    norm = plt.Normalize(min(values), max(values))
-
-    # Create a custom colormap based on the provided RGBA colors
-    custom_cmap = ListedColormap(rgba_colors)
-
-    sm = plt.cm.ScalarMappable(cmap=custom_cmap, norm=norm)
-    sm.set_array([])
-
-    # Create a colorbar
-    cbar = plt.colorbar(sm, ax=ax, location='left')
-    cbar.set_label(label)
-
-    # Adjust the colorbar's appearance
-    cbar.ax.tick_params(labelsize=tick_fontsize)
-
-    return fig, ax
-
-color_list = np.linspace(0, 360, 100)
-rgba_color = deg_color.out_color(color_list, fmat='RGBA')
-fig, ax = plot_custom_colorbar(color_list, rgba_color, label='Custom Colorbar', tick_fontsize=14)
-fig.savefig('./figs/fig_collect/decode_plane_cbar_' + file_label + '.pdf')
 plt.show()
