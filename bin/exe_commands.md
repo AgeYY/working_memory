@@ -1,0 +1,5 @@
+- python ./figs/manifold.py
+- python ./decode_vel_state.py
+- encode_space.py
+- manifold_2d.py
+- fix_point_ring.py

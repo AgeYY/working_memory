@@ -12,6 +12,8 @@ import core.tools as tools
 from core.manifold.state_analyzer import State_analyzer
 from core.manifold.fix_point import Hidden0_helper
 import argparse
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 parser = argparse.ArgumentParser()
 

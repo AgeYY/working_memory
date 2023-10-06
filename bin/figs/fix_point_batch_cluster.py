@@ -26,7 +26,7 @@ rank = comm.Get_rank()
 # Instantiate the parser
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--model_dir', default="../core/model/model_25.0/color_reproduction_delay_unit/", type=str,
+parser.add_argument('--model_dir', default="../core/model/model_90.0/color_reproduction_delay_unit/", type=str,
                     help='models')
 parser.add_argument('--rule_name', default='color_reproduction_delay_unit', type=str,
                     help='RNN and architeture type, fix to the default throught out this paper')
@@ -36,7 +36,7 @@ parser.add_argument('--prod_interval', default=1000, type=int,
                     help='delay epoch length')
 parser.add_argument('--file_label', default='', type=str,
                     help='the figure filename would be name + file_label.pdf')
-parser.add_argument('--gen_data', default=True, action='store_true',
+parser.add_argument('--gen_data', default=False, action='store_true',
                     help='generate data or not')
 
 arg = parser.parse_args()
@@ -49,7 +49,7 @@ file_label = arg.file_label
 gen_data = arg.gen_data
 
 out_path = './figs/fig_data/att_dis_' + file_label + '.json'
-fig_out_path = './figs/fig_collect/att_dis_' + file_label + '.pdf'
+fig_out_path = './figs/fig_collect/att_dis_' + file_label + '.svg'
 
 batch_size = 300
 n_epochs = 20000
@@ -127,9 +127,9 @@ if rank == 0:
 
     bins = np.histogram_bin_edges(att_colors, bins=18, range=(0, 360))
 
-    sns.histplot(att_colors, ax=ax, bins=bins, stat='probability')
+    sns.histplot(att_colors, ax=ax, bins=bins, stat='probability', color='b')
     for cm in common_colors:
-        ax.axvline(x = cm, linestyle = '--', linewidth = 2, color = 'red')
+        ax.axvline(x = cm, linestyle = '--', linewidth = 2, color = 'black')
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -141,4 +141,5 @@ if rank == 0:
 
     plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useMathText=True)
 
-    fig.savefig(fig_out_path, format='pdf')
+    fig.savefig(fig_out_path, format='svg')
+    plt.show()
