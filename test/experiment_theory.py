@@ -3,6 +3,7 @@ import context
 import os
 from core.color_error import Color_error
 from core.color_input import Color_input
+from core.tools import removeOutliers
 import numpy as np
 import matplotlib.pyplot as plt
 from core.agent import Agent, Agent_group
@@ -11,14 +12,6 @@ from brokenaxes import brokenaxes
 import pickle
 import math
 from matplotlib.lines import Line2D
-
-
-def removeOutliers(a, outlierConstant=1.5):
-    upper_quartile = np.percentile(a, 75)
-    lower_quartile = np.percentile(a, 25)
-    IQR = (upper_quartile - lower_quartile) * outlierConstant # 1.5
-    quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
-    return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]
 
 
 model_names = ['3.0','10.0','12.5','15.0','17.5','20.0', '22.5','25.0','27.5', '30.0','90.0']
@@ -64,14 +57,22 @@ for i,prior_sig in enumerate(sigmas):
         phii = sa.angle(end_of_delay_state, fit_pca=True)  # Anyway, remember to fit_pca the first time use angle
 
         ### Dynamic dispersion
-        sqe_phi = (phii - np.mean(phii)) ** 2  # second method
+        color_error = Color_error()
+        color_error.add_data(phii, np.mean(phii))
+        sub_error = color_error.calculate_error()
+        sqe_phi = (sub_error) ** 2
+        # sqe_phi = (phii - np.mean(phii)) ** 2  # second method
         sqe_phi = removeOutliers(sqe_phi)
         dispersion = np.mean(sqe_phi)
         print('dynamic dispersion: ', dispersion)
 
         ### color density
         phi = sa.angle_color(np.array([input_color - delta, input_color + delta]), input_var='color')
-        dc_dphi = 2.0 * delta / (phi[1] - phi[0])
+        color_error = Color_error()
+        color_error.add_data([phi[1]], [phi[0]])
+        sub_error = color_error.calculate_error()[0]
+        dc_dphi = 2.0 * delta / sub_error
+        # dc_dphi = 2.0 * delta / (phi[1] - phi[0])
         density = (dc_dphi) ** 2
         print('color density: ', density)
 
@@ -80,7 +81,12 @@ for i,prior_sig in enumerate(sigmas):
         phic = sa.angle_color(np.array([input_color]), input_var='color')[0]
 
         # regular_term = abs(dc_dphi) * (phii_mean - phic) ** 2 / 2 / math.sqrt(dispersion) # method 1
-        regular_term = density * ((phii_mean - phic) ** 2) # method 2
+
+        color_error = Color_error()
+        color_error.add_data([phii_mean], [phic])
+        sub_error = color_error.calculate_error()[0]
+        regular_term = density * (sub_error ** 2)  # method 2
+        # regular_term = density * ((phii_mean - phic) ** 2) # method 2
         print('regularization term: ', regular_term)
 
         ### theoretical prediction
@@ -89,8 +95,11 @@ for i,prior_sig in enumerate(sigmas):
 
         ### experimental prediction
         sub.do_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, sigma_x=sigma_x, ring_centers=input_color_list)
-        report = sub.behaviour['report_color']
-        sqe_exp = (input_color - report) ** 2  # first method
+
+        color_error = Color_error()
+        color_error.add_data(sub.behaviour['report_color'], sub.behaviour['target_color'])
+        sub_error = color_error.calculate_error()  # circular substraction
+        sqe_exp = sub_error ** 2  # first method
         sqe_exp = removeOutliers(sqe_exp)
         mse_exp = np.mean(sqe_exp)
         print('exp: ', math.sqrt(mse_exp),end='\n\n')
@@ -106,24 +115,33 @@ for i,prior_sig in enumerate(sigmas):
     regular_all.append(regular_sig)
     exp_error_all.append(exp_error_sig)
 
-with open('../bin/figs/fig_data/dynamic_dispersion.txt','wb') as fp:
+with open('../bin/figs/fig_data/dynamic_dispersion_{}.txt'.format(input_color),'wb') as fp:
     pickle.dump(dispersion_all,fp)
-with open('../bin/figs/fig_data/color_density.txt','wb') as fp:
+with open('../bin/figs/fig_data/color_density_{}.txt'.format(input_color),'wb') as fp:
     pickle.dump(density_all,fp)
-with open('../bin/figs/fig_data/regularization.txt','wb') as fp:
+with open('../bin/figs/fig_data/regularization_{}.txt'.format(input_color),'wb') as fp:
     pickle.dump(regular_all,fp)
-with open('../bin/figs/fig_data/experimental_error.txt','wb') as fp:
+with open('../bin/figs/fig_data/experimental_error_{}.txt'.format(input_color),'wb') as fp:
     pickle.dump(exp_error_all,fp)
 # '''
 
 ######### Plot dispersion
 # '''
-with open('../bin/figs/fig_data/dynamic_dispersion.txt','rb') as fp:
+with open('../bin/figs/fig_data/dynamic_dispersion_40.txt','rb') as fp:
     dispersion_all = pickle.load(fp)
+
+dispersion_unadapted = removeOutliers(np.array(dispersion_all[-1]))
+unadapted_mean = np.mean(dispersion_unadapted)
+unadapted_std = np.std(dispersion_unadapted)
+unadapted_means = [unadapted_mean] * len(sigmas)
+upper = [unadapted_mean + unadapted_std] * len(sigmas)
+lower = [unadapted_mean - unadapted_std] * len(sigmas)
 
 fig = plt.figure(figsize=(4,3.5))
 bax = brokenaxes(xlims=((0, 35), (85, 95)), hspace=.05)
 
+bax.plot(sigmas,unadapted_means,'k',linestyle='--',alpha=0.5)
+bax.fill_between(sigmas, lower, upper, color='grey',alpha=0.2)
 bax.boxplot(dispersion_all,showfliers=False,positions=sigmas,patch_artist = True,widths=1.5,boxprops=dict(facecolor='lightblue', color='blue'))
 bax.set_ylabel('Dynamic Dispersion',fontsize=13)
 bax.set_xlabel(r'$\sigma_s$',fontsize=15)
@@ -131,18 +149,30 @@ bax.axs[0].set_xticks([10,20,30])
 bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
 bax.axs[1].set_xticks([90])
 bax.axs[1].set_xticklabels(['90.0'])
+
+bax.plot([],[],color='lightblue',linewidth=8,label='Adapted')
+bax.plot([],[],color='lightgrey',linewidth=8,label='Unadapted')
+bax.legend(loc='lower right')
 plt.savefig('../bin/figs/fig_collect/dynamic_dispersion_common.svg',format='svg',bbox_inches='tight')
 plt.show()
 # '''
 
 ######## Plot color occupancy
 # '''
-with open('../bin/figs/fig_data/color_density.txt','rb') as fp:
+with open('../bin/figs/fig_data/color_density_40.txt','rb') as fp:
     density_all = pickle.load(fp)
+
+density_unadapted = removeOutliers(np.array(density_all[-1]))
+unadapted_mean = np.mean(density_unadapted)
+unadapted_std = np.std(density_unadapted)
+unadapted_means = [unadapted_mean] * len(sigmas)
+upper = [unadapted_mean + unadapted_std] * len(sigmas)
+lower = [unadapted_mean - unadapted_std] * len(sigmas)
 
 fig = plt.figure(figsize=(4,3.5))
 bax = brokenaxes(xlims=((0, 35), (85, 95)), hspace=.05)
-
+bax.plot(sigmas,unadapted_means,'k',linestyle='--',alpha=0.5)
+bax.fill_between(sigmas, lower, upper, color='grey',alpha=0.2)
 bax.boxplot(density_all,showfliers=False,positions=sigmas,patch_artist = True,widths=1.5,boxprops=dict(facecolor='lightblue', color='blue'))
 bax.set_ylabel('Color density',fontsize=13)
 bax.set_xlabel(r'$\sigma_s$',fontsize=15)
@@ -150,14 +180,18 @@ bax.axs[0].set_xticks([10,20,30])
 bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
 bax.axs[1].set_xticks([90])
 bax.axs[1].set_xticklabels(['90.0'])
-# plt.savefig('../bin/figs/fig_collect/color_density_common.svg',format='svg',bbox_inches='tight')
+
+bax.plot([],[],color='lightblue',linewidth=8,label='Adapted')
+bax.plot([],[],color='lightgrey',linewidth=8,label='Unadapted')
+bax.legend(loc='lower right')
+plt.savefig('../bin/figs/fig_collect/color_density_common.svg',format='svg',bbox_inches='tight')
 plt.show()
 # '''
 
 
 # Plot regularization term
 # '''
-with open('../bin/figs/fig_data/regularization.txt', 'rb') as fp:
+with open('../bin/figs/fig_data/regularization_40.txt', 'rb') as fp:
     regular_all = np.sqrt(np.array(pickle.load(fp)))
 
 regular_mean = list(np.mean(regular_all,axis=1))
@@ -177,15 +211,49 @@ plt.show()
 # '''
 
 
-# Compare theoritical and experimental results
+# plot experimental results
 # '''
-with open('../bin/figs/fig_data/color_density.txt','rb') as fp:
+with open('../bin/figs/fig_data/experimental_error_40.txt', 'rb') as fp:
+    exp_error_common = np.array(pickle.load(fp))
+exp_error_box_common = [np.sqrt(exp_error_common[i]) for i in range(exp_error_common.shape[0])]
+
+unadapted_mean = np.mean(np.sqrt(exp_error_common[-1]))
+# unadapted_ste = np.std(np.sqrt(exp_error_common[-1])) / math.sqrt(len(exp_error_common[-1]))
+unadapted_std = np.std(np.sqrt(exp_error_common[-1]))
+unadapted_means = [unadapted_mean] * len(sigmas)
+upper = [unadapted_mean + unadapted_std] * len(sigmas)
+lower = [unadapted_mean - unadapted_std] * len(sigmas)
+
+fig = plt.figure(figsize=(4,3.5))
+bax = brokenaxes(xlims=((0, 35), (85, 95)), hspace=.05)
+bax.plot(sigmas,unadapted_means,'k',linestyle='--',alpha=0.5)
+bax.fill_between(sigmas, lower, upper, color='grey',alpha=0.2)
+bxplt1 = bax.boxplot(exp_error_box_common,showfliers=False,positions=sigmas,patch_artist = True,widths=1.5,boxprops=dict(facecolor='lightblue', color='blue'),medianprops = dict(color = "blue", linewidth = 1.5))
+
+bax.set_ylabel('Memory Error',fontsize=13)
+bax.set_xlabel(r'$\sigma_s$',fontsize=15)
+bax.axs[0].set_xticks([10,20,30])
+bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
+bax.axs[1].set_xticks([90])
+bax.axs[1].set_xticklabels(['90.0'])
+
+bax.plot([],[],color='lightblue',linewidth=8,label='Adapted')
+bax.plot([],[],color='lightgrey',linewidth=8,label='Unadapted')
+bax.legend(loc='lower right')
+plt.savefig('../bin/figs/fig_collect/experimental_error.svg',format='svg',bbox_inches='tight')
+plt.show()
+# '''
+
+
+# Compare theoritical and experimental results (side-by-side boxes)
+# '''
+with open('../bin/figs/fig_data/color_density_40.txt','rb') as fp:
     density_all = np.array(pickle.load(fp))
-with open('../bin/figs/fig_data/dynamic_dispersion.txt','rb') as fp:
+with open('../bin/figs/fig_data/dynamic_dispersion_40.txt','rb') as fp:
     dispersion_all = np.array(pickle.load(fp))
-with open('../bin/figs/fig_data/experimental_error.txt', 'rb') as fp:
+with open('../bin/figs/fig_data/experimental_error_40.txt', 'rb') as fp:
     exp_error_all = np.array(pickle.load(fp))
-with open('../bin/figs/fig_data/regularization.txt', 'rb') as fp:
+with open('../bin/figs/fig_data/regularization_40.txt', 'rb') as fp:
     regular_all = np.array(pickle.load(fp))
 
 
@@ -196,8 +264,17 @@ exp_error_box = [np.sqrt(exp_error_all[i]) for i in range(exp_error_all.shape[0]
 theo_error = np.sqrt(density_all * dispersion_all + regular_all) # method 2
 theo_error_box = [list(theo_error[i]) for i in range(theo_error.shape[0])]
 
+unadapted_theo_mean = np.mean(removeOutliers(theo_error[-1]))
+unadapted_theo_std = np.std(removeOutliers(theo_error[-1]))
+unadapted_theo_means = [unadapted_theo_mean] * len(sigmas)
+unadapted_upper = [unadapted_theo_mean + unadapted_theo_std] * len(sigmas)
+unadapted_lower = [unadapted_theo_mean - unadapted_theo_std] * len(sigmas)
+
+
 fig = plt.figure(figsize=(6,3.5))
 bax = brokenaxes(xlims=((0, 35), (85, 95)), hspace=.05)
+bax.plot(sigmas,unadapted_theo_means,'k',linestyle='--',alpha=0.5)
+bax.fill_between(sigmas, unadapted_lower, unadapted_upper, color='grey',alpha=0.2,label='Theory unadapted')
 
 positions_1 = [x+0.5 for x in sigmas]
 positions_2 = [x-0.5 for x in sigmas]
@@ -210,10 +287,55 @@ bax.axs[0].set_xticks([10,20,30])
 bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
 bax.axs[1].set_xticks([90])
 bax.axs[1].set_xticklabels(['90.0'])
-bax.plot([],[],color='lightblue',linewidth=8,label='Theory')
+bax.plot([],[],color='lightblue',linewidth=8,label='Theory adapted')
 bax.plot([],[],color='salmon',linewidth=8,label='Experiment')
 bax.legend(loc='upper left')
 plt.savefig('../bin/figs/fig_collect/exp_theo_comparison.svg',format='svg',bbox_inches='tight')
+plt.show()
+# '''
+
+
+# Compare theoritical and experimental results (box and dot line)
+'''
+with open('../bin/figs/fig_data/color_density_40.txt','rb') as fp:
+    density_all = np.array(pickle.load(fp))
+with open('../bin/figs/fig_data/dynamic_dispersion_40.txt','rb') as fp:
+    dispersion_all = np.array(pickle.load(fp))
+with open('../bin/figs/fig_data/experimental_error_40.txt', 'rb') as fp:
+    exp_error_all = np.array(pickle.load(fp))
+with open('../bin/figs/fig_data/regularization_40.txt', 'rb') as fp:
+    regular_all = np.array(pickle.load(fp))
+
+# theo_error = np.sqrt(density_all*dispersion_all) + regular_all # method 1
+theo_error = np.sqrt(density_all * dispersion_all + regular_all) # method 2
+theo_error_box = [theo_error[i] for i in range(theo_error.shape[0])]
+
+unadapted_theo_mean = np.mean(removeOutliers(theo_error[-1]))
+unadapted_theo_std = np.std(removeOutliers(theo_error[-1]))
+unadapted_theo_means = [unadapted_theo_mean] * len(sigmas)
+unadapted_upper = [unadapted_theo_mean + unadapted_theo_std] * len(sigmas)
+unadapted_lower = [unadapted_theo_mean - unadapted_theo_std] * len(sigmas)
+
+exp_error_mean = [np.mean(removeOutliers(np.sqrt(exp_error_all[i]))) for i in range(exp_error_all.shape[0])]
+exp_error_std = [np.std(removeOutliers(np.sqrt(exp_error_all[i]))) for i in range(exp_error_all.shape[0])]
+
+fig = plt.figure(figsize=(5.5,4.5))
+bax = brokenaxes(xlims=((0, 35), (85, 95)), hspace=.05)
+
+bax.plot(sigmas,unadapted_theo_means,'k',linestyle='--',alpha=0.5)
+bax.fill_between(sigmas, unadapted_lower, unadapted_upper, color='grey',alpha=0.2,label='Theory unadapted')
+
+bxplt = bax.boxplot(theo_error_box,showfliers=False,positions=sigmas,patch_artist = True,widths=1.5,boxprops=dict(facecolor='lightblue', color='blue'),medianprops = dict(color = "blue", linewidth = 1.5))
+bax.errorbar(x=sigmas, y=exp_error_mean,yerr=exp_error_std,fmt='r.-',linewidth=1.5, markersize=12,label='Experiment',alpha=0.5)
+bax.set_ylabel('Memory Error',fontsize=13)
+bax.set_xlabel(r'$\sigma_s$',fontsize=15)
+bax.axs[0].set_xticks([10,20,30])
+bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
+bax.axs[1].set_xticks([90])
+bax.axs[1].set_xticklabels(['90.0'])
+bax.plot([],[],color='lightblue',linewidth=8,label='Theory adapted')
+bax.legend(loc='lower right')
+plt.savefig('../bin/figs/fig_collect/exp_theo_comparison2.svg',format='svg',bbox_inches='tight')
 plt.show()
 # '''
 

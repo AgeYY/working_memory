@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
-from global_setting import *
 import scipy.stats as sci_st
+import numpy as np
 
-def plot_layer_boxplot_helper(score_exps, layer_order, color=GREY_DARK, ax=None, fig=None, patch_artist=False, jitter=0.04, jitter_s=50, jitter_alpha=0.4, jitter_color='#1f77b4', **box_kwarg):
+def plot_layer_boxplot_helper(score_exps, layer_order, color="#747473", ax=None, fig=None, patch_artist=False, jitter=0.04, jitter_s=50, jitter_alpha=0.4, jitter_color='#1f77b4', **box_kwarg):
     '''
     score_exps (dict): {layer_name1: [list_of_score], layer_name2: [list_of_score], ...}
     layer_order (dict): {layer_name1: 0, layer_name2: 0, ...}. A dict uses layer name as key and the order as value
@@ -55,7 +55,12 @@ def plot_layer_boxplot_helper(score_exps, layer_order, color=GREY_DARK, ax=None,
         for x, y, c in zip(x_jit, score_list, jitter_color_list):
             ax.scatter(x, y, s=jitter_s, alpha=jitter_alpha, c=c)
 
-    ax.set_xticklabels(layer_order.keys())
+    pos, label = [], []
+    for key in layer_order:
+        pos.append(layer_order[key])
+        label.append(str(key))
+    ax.set_xticks(pos)
+    ax.set_xticklabels(label)
     ax.spines['left'].set_linewidth(1.5)
     ax.spines['bottom'].set_linewidth(1)
     ax.spines['right'].set_visible(False)
