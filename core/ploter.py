@@ -66,3 +66,25 @@ def plot_layer_boxplot_helper(score_exps, layer_order, color="#747473", ax=None,
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     return fig, ax
+
+def error_bar_plot(x, y, fig=None, ax=None, color='tab:blue', label='', error_mode='se', mean_mode='mean'):
+    if fig is None: fig, ax = plt.subplots()
+
+    if mean_mode == 'mean':
+        mean_y = [np.mean(v) for v in y]
+    else:
+        mean_y = [np.median(v) for v in y]
+
+    if error_mode == 'se':
+        se_y = [np.std(v) / np.sqrt(len(v)) for v in y]
+        ax.errorbar(x, mean_y, yerr=se_y, fmt='o', color=color)
+    elif error_mode == 'std':
+        se_y = [np.std(v) for v in y]
+        ax.errorbar(x, mean_y, yerr=se_y, fmt='o', color=color)
+    elif error_mode == 'quantile':
+        y_25 = np.array([np.percentile(v, 25) for v in y])
+        y_75 = np.array([np.percentile(v, 75) for v in y])
+        ax.errorbar(x, mean_y, yerr=[mean_y - y_25, y_75 - mean_y], fmt='o', color=color)
+
+    ax.plot(x, mean_y, color=color, label=label)
+    return fig, ax
