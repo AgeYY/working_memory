@@ -127,7 +127,7 @@ if rank == 0:
 
     bins = np.histogram_bin_edges(att_colors, bins=18, range=(0, 360))
 
-    sns.histplot(att_colors, ax=ax, bins=bins, stat='probability', color='b')
+    sns.histplot(att_colors, ax=ax, bins=bins, stat='probability', color='tab:red')
     for cm in common_colors:
         ax.axvline(x = cm, linestyle = '--', linewidth = 2, color = 'black')
 

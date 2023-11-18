@@ -37,13 +37,12 @@ for noise in ['0.10','0.30']:
 '''
 
 # Figure 4 D distribution of attractors
-# '''
+'''
 sub_dir = 'model_40/noise_delta'
-# for noise in ['0.10','0.30']:
-for noise in ['0.00']:
+for noise in ['0.10','0.30']:
     model_dir = "../core/model_noise/noise_"+str(noise)+"/model_17.5/color_reproduction_delay_unit/"
-    # os.system('python ./figs/fix_point_batch_cluster.py' + ' --model_dir ' + model_dir + ' --file_label ' + 'noise'+str(noise))
-    os.system('python ./figs/fix_point_batch_cluster.py' + ' --model_dir ' + model_dir + ' --file_label ' + 'noise'+str(noise) + ' --gen_data ')
-    # os.system('python ./figs/fix_point_batch_entropy.py')
+    os.system('python ./figs/fix_point_batch_cluster.py' + ' --model_dir ' + model_dir + ' --file_label ' + 'noise'+str(noise))
 
-# '''
+    # if you want to generate data, turn on the --gen_data flag
+    # os.system('python ./figs/fix_point_batch_cluster.py' + ' --model_dir ' + model_dir + ' --file_label ' + 'noise'+str(noise) + ' --gen_data ')
+'''
