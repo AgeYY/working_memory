@@ -139,8 +139,8 @@ x_delta = x_delta // density_bin_size * density_bin_size + density_bin_size / 2.
 x, mean_y, se_y = mean_se(x_delta, dydx_delta, remove_outlier=True, epsilon=0.1, sd=True)
 
 #plot_figure(x_delta, dydx_delta, ax=ax)
-ax.fill_between(x, mean_y + se_y, mean_y - se_y, alpha=0.5, color='b')
-ax.plot(x, mean_y, color='b')
+ax.fill_between(x, mean_y + se_y, mean_y - se_y, alpha=0.5, color='tab:red')
+ax.plot(x, mean_y, color='tab:red')
 
 ax.set_xlabel('')
 ax.set_ylabel('')
@@ -152,7 +152,7 @@ ax.grid(False)
 ax.set_xticks([0, 180, 360])
     
 ax.set_xlabel(r'Color $\phi$')
-ax.set_ylabel(r'Angular Occupation $d\theta/d\phi$')
+ax.set_ylabel('Angular Occupation $d\\theta/d\\phi$ \n (angle degree / color degree)')
     
 ax.set_ylim([0., 3.0])
 

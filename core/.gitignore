@@ -1,6 +1,7 @@
 __pycache__/
 model_local/
 model_test/
+model_noise/
 model/
 *.pyc
 __pycache__/

@@ -45,7 +45,7 @@ fig_out_path = './figs/fig_collect/traj_fix_' + file_label
 
 hidden_size = 256
 prod_interval_mplot = prod_intervals # 800 for ploting delay trajectories, not for searching fixpoints. 5000 for long delay epoch
-prod_interval_search = 100 # for initialize the searching points for find_fixpoints
+prod_interval_search = 300 # for initialize the searching points for find_fixpoints
 batch_size = 300
 n_epochs = 10000
 lr=1

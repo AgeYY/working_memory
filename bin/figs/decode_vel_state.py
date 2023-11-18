@@ -36,6 +36,7 @@ sub_dir = arg.sub_dir
 file_label = arg.file_label
 gen_data = arg.gen_data
 
+print('model_dir: ', model_dir)
 out_dir = './figs/fig_collect/decode_plane_' + file_label + '.pdf'
 out_path = './figs/fig_data/decode_vel_plane' + file_label + '.json'
 

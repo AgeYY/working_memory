@@ -1,7 +1,6 @@
 # Introduction
 
 This project employed artificial recurrent neural networks (RNNs) as a model of the brain to explore the dynamic mechanism and computational principle of short-term memory.
-
 # How to use this repo
 
 Please find *./bin/PersiTransWM.ipynb* for reproducing main figures, and *./bin/PersiTransWM.ipynb* for SI figures.
