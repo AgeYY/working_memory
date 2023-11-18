@@ -483,3 +483,27 @@ def state_to_angle(states, pca=None, state_type='data', verbose=False):
         return angle, pca
     else:
         return angle
+
+def find_indices(full_list, target_values):
+    '''
+    # Example usage:
+    full_list = [10, 20, 30, 40, 50]
+    target_values = [30, 50, 70]
+    result = find_indices(full_list, target_values)
+    print("Indices of target values:", result)
+    '''
+    indices = []
+    for target in target_values:
+        try:
+            index = full_list.index(target)
+            indices.append(index)
+        except ValueError:
+            indices.append(None)  # Target value not found in the full list
+    return indices
+
+def removeOutliers(a, outlierConstant=1.5):
+    upper_quartile = np.percentile(a, 75)
+    lower_quartile = np.percentile(a, 25)
+    IQR = (upper_quartile - lower_quartile) * outlierConstant # 1.5
+    quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
+    return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]

@@ -28,9 +28,12 @@ pca_degree = np.linspace(0, 360, n_colors, endpoint=False)
 xlim = [-30, 30]
 ylim = [-30, 30]
 edge_batch_size = 50 # number of points in each direction
+# to study the drift of go period, use
 period_name = 'interval' # can be response, of interval PC1-PC2 plane
-#evolve_period = ['go_cue', 'go_cue']
-#evolve_period = ['interval', 'interval']
+evolve_period = ['go_cue', 'go_cue']
+
+# to study the drift of response period, use
+period_name = 'response' # can be response, of interval PC1-PC2 plane
 evolve_period = ['response', 'response']
 
 ##### Get mesh points in the response PC1-PC2 plane
