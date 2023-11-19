@@ -46,3 +46,8 @@ for noise in ['0.10','0.30']:
     # if you want to generate data, turn on the --gen_data flag
     # os.system('python ./figs/fix_point_batch_cluster.py' + ' --model_dir ' + model_dir + ' --file_label ' + 'noise'+str(noise) + ' --gen_data ')
 '''
+
+# Figure 4E
+pass
+
+# Figure 4F

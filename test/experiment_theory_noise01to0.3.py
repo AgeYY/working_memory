@@ -3,6 +3,7 @@ import context
 import os
 from core.color_error import Color_error
 from core.color_input import Color_input
+from core.tools import removeOutliers
 import numpy as np
 import matplotlib.pyplot as plt
 from core.agent import Agent, Agent_group
@@ -12,24 +13,16 @@ import pickle
 import math
 from matplotlib.lines import Line2D
 
-
-def removeOutliers(a, outlierConstant=1):
-    upper_quartile = np.percentile(a, 75)
-    lower_quartile = np.percentile(a, 25)
-    IQR = (upper_quartile - lower_quartile) * outlierConstant # 1.5
-    quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
-    return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]
-
-
 Noises = ['0.10', '0.12', '0.14', '0.16', '0.18', '0.20', '0.22', '0.24', '0.26', '0.28', '0.30', '0.32']
 Noise_values = [0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.32]
 
 ######## Calculation
-'''
+# '''
 dispersion_all = []
 density_all = []
 regular_all = []
 exp_error_all = []
+mean_bias_all = []
 prod_int = 800 # duration of the delay
 input_color = 40 # the input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
 batch_size = 5000
@@ -46,6 +39,7 @@ for i,noise in enumerate(Noises):
     density_n = []
     regular_n = []
     exp_error_n= []
+    mean_bias_n = []
 
     for m in range(50):
         print(noise, m)
@@ -53,7 +47,7 @@ for i,noise in enumerate(Noises):
         f = os.path.join(model_dir_parent, model_dir, sub_dir)
         sub = Agent(f, rule_name)  # this is the outside agent creating data
         ### obtain angle of common color phi_c
-        sa = State_analyzer(decoder_type='RNN_decoder')
+        sa = State_analyzer()
         sa.read_rnn_file(f,rule_name)  # I strongly recommand using read_rnn_file instead of creating a agent outside (read_rnn_agent). Agent used within a state_analyzer should not be used outside.
 
         ### obtain angle phi_i at the end of delay in repeated trials
@@ -91,6 +85,7 @@ for i,noise in enumerate(Noises):
         color_error = Color_error()
         color_error.add_data([phii_mean], [phic])
         sub_error = color_error.calculate_error()[0]
+        mean_bias = sub_error.copy()
         regular_term = density * (sub_error ** 2)  # method 2
         # regular_term = density * ((phii_mean - phic) ** 2) # method 2
         print('regularization term: ', regular_term)
@@ -114,12 +109,14 @@ for i,noise in enumerate(Noises):
         density_n.append(density)
         regular_n.append(regular_term)
         exp_error_n.append(mse_exp)
+        mean_bias_n.append(mean_bias)
 
 
     dispersion_all.append(dispersion_n)
     density_all.append(density_n)
     regular_all.append(regular_n)
     exp_error_all.append(exp_error_n)
+    mean_bias_all.append(mean_bias_n)
 
 with open('../bin/figs/fig_data/dynamic_dispersion_{}_noise.txt'.format(input_color),'wb') as fp:
     pickle.dump(dispersion_all,fp)
@@ -127,6 +124,8 @@ with open('../bin/figs/fig_data/color_density_{}_noise.txt'.format(input_color),
     pickle.dump(density_all,fp)
 with open('../bin/figs/fig_data/regularization_{}_noise.txt'.format(input_color),'wb') as fp:
     pickle.dump(regular_all,fp)
+with open('../bin/figs/fig_data/mean_bias_{}_noise.txt'.format(input_color),'wb') as fp:
+    pickle.dump(mean_bias_all,fp)
 with open('../bin/figs/fig_data/experimental_error_{}_noise.txt'.format(input_color),'wb') as fp:
     pickle.dump(exp_error_all,fp)
 # '''
@@ -146,9 +145,9 @@ lower = [unadapted_mean - unadapted_std] * len(Noise_values)
 fig, ax = plt.subplots(figsize=(4,3.5))
 # ax.plot(Noise_values,unadapted_means,'k',linestyle='--',alpha=0.5)
 # ax.fill_between(Noise_values, lower, upper, color='grey',alpha=0.2)
-ax.boxplot(dispersion_all[:-1],showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='lightblue', color='blue'))
-ax.set_ylabel('Dynamic Dispersion',fontsize=13)
-ax.set_xlabel('Noise',fontsize=15)
+ax.boxplot(dispersion_all[:-1],showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='tab:blue', color='k'))
+ax.set_ylabel('Dynamic Dispersion \n (angle degree$^2$)',fontsize=16)
+ax.set_xlabel('Noise',fontsize=16)
 ax.set_xticks([0.1,0.16,0.22,0.28,0.34])
 ax.set_xticklabels(['0.1','0.16','0.22','0.28','0.34'])
 ax.set_xlim((0.08,0.34))
@@ -159,7 +158,7 @@ plt.show()
 # '''
 
 ######## Plot color occupancy
-'''
+# '''
 with open('../bin/figs/fig_data/color_density_40_noise.txt','rb') as fp:
     density_all = pickle.load(fp)
 
@@ -171,8 +170,8 @@ upper = [unadapted_mean + unadapted_std] * len(Noise_values)
 lower = [unadapted_mean - unadapted_std] * len(Noise_values)
 
 fig, ax = plt.subplots(figsize=(4,3.5))
-ax.boxplot(density_all[:-1],showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='lightblue', color='blue'))
-ax.set_ylabel('Color density',fontsize=13)
+ax.boxplot(density_all[:-1],showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='tab:blue', color='k'))
+ax.set_ylabel('Color density',fontsize=15)
 ax.set_xlabel('Noise',fontsize=15)
 ax.set_xticks([0.1,0.16,0.22,0.28,0.34])
 ax.set_xticklabels(['0.1','0.16','0.22','0.28','0.34'])
@@ -183,9 +182,28 @@ plt.savefig('../bin/figs/fig_collect/color_density_common_noise.svg',format='svg
 plt.show()
 # '''
 
+# Plot regularization term (mean bias correction)
+with open('../bin/figs/fig_data/regularization_40_noise.txt','rb') as fp:
+    regular_all = np.array(pickle.load(fp))
+
+# regular_mean = list(np.mean(regular_all,axis=1))
+# regular_std = list(np.std(regular_all,axis=1) / math.sqrt(len(sigmas)))
+regular_box = [list(regular_all[i]) for i in range(regular_all.shape[0])]
+
+fig, ax = plt.subplots(figsize=(4,3.5))
+ax.boxplot(regular_all[:-1],showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='tab:blue', color='k'))
+ax.set_ylabel('Mean Bias Correction \n (color degree$^2$)',fontsize=15)
+ax.set_xlabel('Noise',fontsize=15)
+ax.set_xticks([0.1,0.16,0.22,0.28,0.34])
+ax.set_xticklabels(['0.1','0.16','0.22','0.28','0.34'])
+ax.set_xlim((0.08,0.34))
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+plt.savefig('../bin/figs/fig_collect/mean_bias_noise.svg',format='svg',bbox_inches='tight')
+plt.show()
 
 # Compare theoritical and experimental results (side-by-side boxes)
-'''
+# '''
 with open('../bin/figs/fig_data/color_density_40_noise.txt','rb') as fp:
     density_all = np.array(pickle.load(fp))
 with open('../bin/figs/fig_data/dynamic_dispersion_40_noise.txt','rb') as fp:
@@ -194,6 +212,8 @@ with open('../bin/figs/fig_data/experimental_error_40_noise.txt', 'rb') as fp:
     exp_error_all = np.array(pickle.load(fp))
 with open('../bin/figs/fig_data/regularization_40_noise.txt', 'rb') as fp:
     regular_all = np.array(pickle.load(fp))
+with open('../bin/figs/fig_data/mean_bias_40_noise.txt') as fp:
+    mean_bias_all = np.array(pickle.load(fp))
 
 
 
@@ -203,29 +223,19 @@ exp_error_box = [np.sqrt(exp_error_all[i]) for i in range(exp_error_all.shape[0]
 theo_error = np.sqrt(density_all * dispersion_all + regular_all) # method 2
 theo_error_box = [list(theo_error[i]) for i in range(theo_error.shape[0])]
 
-
+no_decode_theo_error = np.sqrt(dispersion_all + mean_bias_all**2) # the result of setting d color / d angle = 1
+no_decode_theo_error_bos = [list(no_decode_theo_error[i]) for i in range(no_decode_theo_error.shape[0])]
 
 fig, ax = plt.subplots(figsize=(6,3.5))
+error_mode, mean_mode = 'quantile', 'median'
+error_bar_plot(Noise_values, theo_error_box[:-1], fig=fig, ax=ax, color='tab:blue', label='Theory', error_mode=error_mode, mean_mode=mean_mode)
+error_bar_plot(Noise_values, exp_error_box[:-1], fig=fig, ax=ax, color='tab:green', label='Theory \n Angular Occupation = 1', error_mode=error_mode, mean_mode=mean_mode)
+error_bar_plot(Noise_values, exp_error_box, fig=fig, ax=ax, color='tab:red', label='Experiment', error_mode=error_mode, mean_mode=mean_mode)
 
-positions_1 = [x+0.0025 for x in Noise_values]
-positions_2 = [x-0.0025 for x in Noise_values]
+ax.set_ylabel('Memory Error \n (color degree)',fontsize=13)
+ax.set_ylabel('Noise', fontsize=15)
+fig.tight_layout()
 
-ax.boxplot(theo_error_box[:-1],showfliers=False,positions=positions_1[:-1],patch_artist = True,widths=0.005,boxprops=dict(facecolor='lightblue', color='darkblue'),medianprops = dict(color = "darkblue", linewidth = 1.5))
-ax.boxplot(exp_error_box[:-1],showfliers=False,positions=positions_2[:-1],patch_artist = True,widths=0.005,boxprops=dict(facecolor='salmon', color='darkred'),medianprops = dict(color = "darkred", linewidth = 1.5))
-ax.set_ylabel('Memory Error',fontsize=13)
-ax.set_xlabel('Noise',fontsize=15)
-ax.set_xticks([0.1,0.16,0.22,0.28,0.34])
-ax.set_xticklabels(['0.1','0.16','0.22','0.28','0.34'])
-ax.set_xlim((0.08,0.32))
-ax.plot([],[],color='lightblue',linewidth=8,label='Theory')
-ax.plot([],[],color='salmon',linewidth=8,label='Experiment')
-ax.legend(loc='upper left')
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
 plt.savefig('../bin/figs/fig_collect/exp_theo_comparison_noise.svg',format='svg',bbox_inches='tight')
 plt.show()
 # '''
-
-
-
-
