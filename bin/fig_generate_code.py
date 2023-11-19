@@ -51,3 +51,10 @@ for noise in ['0.10','0.30']:
 pass
 
 # Figure 4F
+
+#
+os.system('python ./figs/eg_go_response_plane_figure.py')
+#
+os.system('python ./figs/go_response_drift.py')
+#
+os.system('python ./figs/go_response_drift_sigmas.py')

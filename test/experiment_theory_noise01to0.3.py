@@ -112,6 +112,8 @@ for i,noise in enumerate(Noises):
         mean_bias_n.append(mean_bias)
 
 
+    print('mean_bias_all:', mean_bias_all)
+    print('regular all:', regular_all)
     dispersion_all.append(dispersion_n)
     density_all.append(density_n)
     regular_all.append(regular_n)
@@ -131,7 +133,7 @@ with open('../bin/figs/fig_data/experimental_error_{}_noise.txt'.format(input_co
 # '''
 
 ######### Plot dispersion
-# '''
+'''
 with open('../bin/figs/fig_data/dynamic_dispersion_40_noise.txt','rb') as fp:
     dispersion_all = pickle.load(fp)
 
@@ -153,12 +155,13 @@ ax.set_xticklabels(['0.1','0.16','0.22','0.28','0.34'])
 ax.set_xlim((0.08,0.34))
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
+fig.tight_layout()
 plt.savefig('../bin/figs/fig_collect/dynamic_dispersion_common_noise.svg',format='svg',bbox_inches='tight')
 plt.show()
 # '''
 
 ######## Plot color occupancy
-# '''
+'''
 with open('../bin/figs/fig_data/color_density_40_noise.txt','rb') as fp:
     density_all = pickle.load(fp)
 
@@ -171,13 +174,14 @@ lower = [unadapted_mean - unadapted_std] * len(Noise_values)
 
 fig, ax = plt.subplots(figsize=(4,3.5))
 ax.boxplot(density_all[:-1],showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='tab:blue', color='k'))
-ax.set_ylabel('Color density',fontsize=15)
+ax.set_ylabel('Squared reciprocal of \n the Angular Occupation \n (color degree$^2$ / angle degree$^2$)',fontsize=15)
 ax.set_xlabel('Noise',fontsize=15)
 ax.set_xticks([0.1,0.16,0.22,0.28,0.34])
 ax.set_xticklabels(['0.1','0.16','0.22','0.28','0.34'])
 ax.set_xlim((0.08,0.34))
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
+fig.tight_layout()
 plt.savefig('../bin/figs/fig_collect/color_density_common_noise.svg',format='svg',bbox_inches='tight')
 plt.show()
 # '''
@@ -191,7 +195,7 @@ with open('../bin/figs/fig_data/regularization_40_noise.txt','rb') as fp:
 regular_box = [list(regular_all[i]) for i in range(regular_all.shape[0])]
 
 fig, ax = plt.subplots(figsize=(4,3.5))
-ax.boxplot(regular_all[:-1],showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='tab:blue', color='k'))
+ax.boxplot(list(regular_all[:-1]),showfliers=False,positions=Noise_values[:-1],patch_artist = True,widths=0.01,boxprops=dict(facecolor='tab:blue', color='k'))
 ax.set_ylabel('Mean Bias Correction \n (color degree$^2$)',fontsize=15)
 ax.set_xlabel('Noise',fontsize=15)
 ax.set_xticks([0.1,0.16,0.22,0.28,0.34])
@@ -199,6 +203,7 @@ ax.set_xticklabels(['0.1','0.16','0.22','0.28','0.34'])
 ax.set_xlim((0.08,0.34))
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
+fig.tight_layout()
 plt.savefig('../bin/figs/fig_collect/mean_bias_noise.svg',format='svg',bbox_inches='tight')
 plt.show()
 
@@ -212,9 +217,10 @@ with open('../bin/figs/fig_data/experimental_error_40_noise.txt', 'rb') as fp:
     exp_error_all = np.array(pickle.load(fp))
 with open('../bin/figs/fig_data/regularization_40_noise.txt', 'rb') as fp:
     regular_all = np.array(pickle.load(fp))
-with open('../bin/figs/fig_data/mean_bias_40_noise.txt') as fp:
+with open('../bin/figs/fig_data/mean_bias_40_noise.txt', 'rb') as fp:
     mean_bias_all = np.array(pickle.load(fp))
 
+print(mean_bias_all.shape)
 
 
 exp_error_box = [np.sqrt(exp_error_all[i]) for i in range(exp_error_all.shape[0])]

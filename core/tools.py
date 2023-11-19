@@ -507,3 +507,8 @@ def removeOutliers(a, outlierConstant=1.5):
     IQR = (upper_quartile - lower_quartile) * outlierConstant # 1.5
     quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
     return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]
+
+def align_center_multiline(text):
+    lines = text.split('\n')
+    width = max(len(line) for line in lines)
+    return '\n'.join(line.center(width) for line in lines)
