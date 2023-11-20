@@ -58,3 +58,11 @@ os.system('python ./figs/eg_go_response_plane_figure.py')
 os.system('python ./figs/go_response_drift.py')
 #
 os.system('python ./figs/go_response_drift_sigmas.py')
+#
+os.system('python ./figs/experiment_theory_noise01to0.3.py')
+#
+os.system('python ./figs/readout_decode_response_plane.py')
+#
+os.system('python ./figs/readout_angular_occupancy_eg.py')
+#
+os.system('python ./figs/readout_angular_occupancy_entropy_sigmas.py')

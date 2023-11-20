@@ -176,7 +176,7 @@ class Hidden0_helper():
 
         return cords_pca, cords_state_origin
 
-    def delay_ring(self, sub, sigma_init=0, batch_size=1000, period_name='interval'):
+    def delay_ring(self, sub, sigma_init=0, batch_size=1000, period_name='interval', return_pca=False):
         '''
         At the end of delay, the manifold is a ring (although not perfect). Delay_ring is a ring on the pc1-pc2 plane. Its radius is the same as the points on the end of delay.  We sample points on delay ring, and map it back to the original high dimensional space.
         input:
@@ -207,4 +207,7 @@ class Hidden0_helper():
 
         cords_origin = pca.inverse_transform(cords_pca)
 
-        return cords_pca, cords_origin
+        if return_pca:
+            return cords_pca, cords_origin, pca
+        else:
+            return cords_pca, cords_origin
