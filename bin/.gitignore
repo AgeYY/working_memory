@@ -1,6 +1,7 @@
 server_command.sh
 server_command.py
-figs/*
+figs/fig_collect/*
+figs/fig_data/*
 *.pyc
 output
 .ipynb_checkpoints/
