@@ -50,7 +50,7 @@ def gen_type_RNN(sub,batch_size=300):
     rnn_de = RNN_decoder()
     rnn_de.read_rnn_agent(sub)
 
-    report_color_ring = rnn_de.decode(hidden0_ring)
+    report_color_ring = rnn_de.decode(hidden0_ring, decoding_plane='response')
     deg = state_to_angle(hidden0_ring, pca=pca, state_type='data',verbose=False)  # (n_ring). Compute the angle of the ring states. using report_color_ring and deg one can then compute the angular occupation of color, see encode_space for more detail. The result should be x, mean_y in line 139 of encode_space.py
 
     return report_color_ring, deg
