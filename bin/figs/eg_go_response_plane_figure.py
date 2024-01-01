@@ -81,6 +81,9 @@ def prepare_and_evolve(period_name, evolve_period, fig=None, ax=None):
     se.read_rnn_file(model_file, rule_name)
     end_cords_origin = se.evolve(cords_origin, evolve_period=evolve_period)
     end_cords_pca = origin_to_pca(end_cords_origin[-1])
+
+    if period_name == 'response': # only the averaged neural state will be converted to color
+        end_cords_pca = origin_to_pca(np.mean(end_cords_origin, axis=0))
     
     if ax is None:
         fig, ax = plt.subplots(1, 2, figsize=(5, 3))
@@ -119,7 +122,7 @@ ax[1].set_xlabel('PC1 \n (Response Plane)')
 ax[1].set_title('Go End')
 fig.savefig('./figs/fig_collect/go_start_end_plane.svg', format='svg')
 
-Period_name = 'response'
+period_name = 'response'
 evolve_period = ['response', 'response']
 fig, ax = prepare_and_evolve(period_name, evolve_period)
 
@@ -127,7 +130,7 @@ ax[0].set_ylabel('PC2')
 ax[0].set_xlabel('PC1 \n (Response Plane)')
 ax[0].set_title('Response Start \n mannually set uniform states')
 ax[1].set_xlabel('PC1 \n (Response Plane)')
-ax[1].set_title('Response End')
+ax[1].set_title('Response Average')
 fig.savefig('./figs/fig_collect/res_start_end_plane.svg', format='svg')
 
 plt.show()

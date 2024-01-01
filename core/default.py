@@ -84,10 +84,10 @@ def get_default_hp(rule_name, random_seed=None):
         'rng': np.random.RandomState(seed),
         # Stop training if all three criteriers are met: 1. cost function smaller than stop_cost (or stop_noise_cost if sigma_rec > 0.0001 as usually is); 2. RNN's memorized color error smaller than stop_color_error (or stop_noise_color_error); 3. number of trials must larger than min_trials. Alternatively, training force to be stopped if number of trials exceed max_trials. In practice we set stop_cost and stop_color_error to be large so always satisfied, and only use min_trials and max_trials to control training.
         'stop_cost': 9999999,
-        'stop_color_error': 2,
-        'stop_noise_cost': 1,
-        'stop_noise_color_error': 12, # stop color error is for the training with no noise, while this one is the stop condition for training with noise
-        'stop_delta_color_error': 10, # stopping ceriteria for bias_method = delta training
+        'stop_color_error': 999999,
+        'stop_noise_cost': 999999,
+        'stop_noise_color_error': 99999, # stop color error is for the training with no noise, while this one is the stop condition for training with noise
+        'stop_delta_color_error': 99999, # stopping ceriteria for bias_method = delta training
         # if the number of trials is larger than max_trials, stop training
         'max_trials': 1e6,
         'min_trials': 2e5,

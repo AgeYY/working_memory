@@ -22,7 +22,7 @@ try:
 except:
     rule_name = 'color_reproduction_delay_unit'
     model_dir = '../core/model/model_12.5/color_reproduction_delay_unit/'
-    sub_dir = '/model_3/noise_delta'
+    sub_dir = '/model_5/noise_delta'
 
 try:
     if sys.argv[4] == 'Y': # set false so it will not generate data

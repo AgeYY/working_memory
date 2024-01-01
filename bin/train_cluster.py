@@ -22,12 +22,13 @@ parser.add_argument('--sig_s', default=25.0, type=float,
                     help='sigma_s in training prior distribution')
 parser.add_argument('--n_model', default=1, type=int,
                     help='Trianing n models with the same hyperparameters')
-parser.add_argument('--model_base_dir', default='../core/model/', type=str,
+parser.add_argument('--model_base_dir', default='../core/model_short_res/', type=str,
                     help='Trianing n models with the same hyperparameters')
 
 arg = parser.parse_args()
 
 sig = round( float(arg.sig_s), 1 )
+sig = 3.0
 n_models = int(arg.n_model)
 model_base = arg.model_base_dir + 'model_' + str(round(sig, 1)) + '/'
 
@@ -36,9 +37,9 @@ is_cuda = True
 rule_name = "color_reproduction_delay_unit" # RNN types: can be "color_reproduction_delay_unit", or 'color_reproduction_delay_tri'. See explanation in default.py
 
 hp_replace = {'prod_interval': [0, 1000], 'l2_jac': -1, 'sigma_rec': 0.2, 'sigma_x': 0.2, 'num_unit': 12, \
-              'n_input': 13, 'n_output': 12, 'n_rnn': 256, 'bias_method': 'vonmises', 'sig': sig, 'stop_color_error': 1, \
-              'stop_noise_color_error': 30, 'stop_delta_color_error': 30, 'min_trials': 2e5, \
-              'bias_centers': [40., 130., 220., 310.],
+              'n_input': 13, 'n_output': 12, 'n_rnn': 256, 'bias_method': 'vonmises', 'sig': sig, \
+              'min_trials': 2e5, \
+              'bias_centers': [40., 130., 220., 310.], 'response_duration': 40, 'pulse_duration_go': 40
              } # n_input must = n_output + 1. Check default for the meaning of each parameters.
 #################### Training
 for i in range(rank, n_models, size):

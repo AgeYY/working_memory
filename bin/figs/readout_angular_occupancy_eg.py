@@ -65,6 +65,8 @@ angle_list = []
 x_delta_list, dydx_delta_list = [], []
 sa = State_analyzer()
 for filename in os.listdir(model_dir_parent):
+    # if filename == 'model_0': pass
+    # else: continue
     f = os.path.join(model_dir_parent, filename)
     sub = Agent(f, rule_name)
     sa.read_rnn_agent(sub)
@@ -76,7 +78,7 @@ for filename in os.listdir(model_dir_parent):
     x_delta, dydx_delta = diff_xy(x_delta, y_delta)
     x_delta_list.append(x_delta)
     dydx_delta_list.append(dydx_delta)
-
+    
 ###### plot the distribution of angular occupation
 # '''
 x_delta = np.concatenate(x_delta_list, axis=None).flatten()

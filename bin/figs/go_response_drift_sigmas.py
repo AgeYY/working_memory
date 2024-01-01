@@ -71,7 +71,10 @@ for prior_sig in sigmas:
         states = se.evolve(cords_origin, evolve_period=evolve_period)
         # print(states.shape)
         angle_s = state_to_angle(states[0])
-        angle_e = state_to_angle(states[-1])
+        if evolve_period[1] == 'go_cue':
+            angle_e = state_to_angle(states[-1])
+        elif evolve_period[1] == 'response':
+            angle_e = state_to_angle(np.mean(states, axis=0))
 
         hist_s, _ = np.histogram(angle_s, bins=bin_edges, density=True)
         hist_e, _ = np.histogram(angle_e, bins=bin_edges, density=True)

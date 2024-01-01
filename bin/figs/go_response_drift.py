@@ -56,7 +56,11 @@ se.set_trial_para(prod_interval=prod_intervals)
 states = se.evolve(cords_origin, evolve_period=evolve_period)
 print(states.shape)
 angle_s = state_to_angle(states[0])
-angle_e = state_to_angle(states[-1])
+
+if evolve_period[0] == 'go_cue':
+    angle_e = state_to_angle(states[-1])
+elif evolve_period[0] == 'response':
+    angle_e = state_to_angle(np.mean(states, axis=0))
 
 hist_s, _ = np.histogram(angle_s, bins=list(np.arange(0, 360, 10)), density=True)
 hist_e, _ = np.histogram(angle_e, bins=list(np.arange(0, 360, 10)), density=True)
@@ -68,13 +72,20 @@ print(entropy_s, entropy_e)
 
 fig,ax = plt.subplots(figsize=(3.5,3))
 ax.hist(angle_s, bins=list(np.arange(0, 360, 10)),density=False,label='Start',alpha=0.7,color='tab:blue')
-ax.hist(angle_e, bins=list(np.arange(0, 360, 10)),density=False,label='End',alpha=0.7,color='tab:red')
+
+if evolve_period[0] == 'go_cue':
+    end_label = 'End'
+elif evolve_period[0] == 'response':
+    end_label = 'Average'
+
+ax.hist(angle_e, bins=list(np.arange(0, 360, 10)),density=False,label=end_label,alpha=0.7,color='tab:red')
 ax.set_xlim((0,360))
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.set_xlabel('Angle (angle degree)',fontsize=15)
 ax.set_ylabel('Number of Neural States',fontsize=15)
 ax.legend(frameon=False)
+# ax.set_ylim((0,80))
 plt.tight_layout()
 plt.savefig('../bin/figs/fig_collect/drift_'+evolve_period[0]+'.svg',format='svg',bbox_inches='tight')
 plt.show()

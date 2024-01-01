@@ -31,7 +31,7 @@ edge_batch_size = 50 # number of points in each direction
 period_name = 'response' # can be response, of interval PC1-PC2 plane
 
 ##### Get mesh points in the response PC1-PC2 plane
-model_dir = 'model_12/'  # example RNN
+model_dir = 'model_0/'  # example RNN
 model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
 
 sub = Agent(model_file, rule_name)

@@ -58,10 +58,12 @@ def get_perf_color(output, rule_name, target_dir, fix_start, fix_end, fix_streng
     fail_action = action_at_fix + no_action_at_motion
 
     middle_duration = int(response_duration / 3.0) # the length of middle 1 /3 of response
+    middle_duration = 0
 
     response_value = np.zeros((batch_size, output.shape[-1])) # output.shape[-1] is the number of output channels
     for i in range(batch_size):
         middle_res = output[(fix_end[i] + middle_duration):(fix_end[i] + 2 * middle_duration), i, :]
+        # middle_res = output[(fix_end[i]):(fix_end[i] + response_duration), i, :]
         response_value[i, :] = np.mean(middle_res, axis=0) # we choose the mean of middle 1 / 3 as the RNN's response value
 
     if rule_name == 'color_reproduction_delay_32':

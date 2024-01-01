@@ -2,6 +2,8 @@ __pycache__/
 model_local/
 model_test/
 model_noise/
+model_short_res/
+model_short_response/
 model/
 *.pyc
 __pycache__/
