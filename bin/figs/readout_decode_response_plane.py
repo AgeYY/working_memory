@@ -12,7 +12,7 @@ from core.color_manager import Degree_color
 # file names
 prior_sig = 3.0
 rule_name = 'color_reproduction_delay_unit'
-adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
+adapted_model_dir_parent = "../core/model_short_res_rep/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
 
 sub_dir = 'noise_delta/'
 

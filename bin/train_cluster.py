@@ -22,7 +22,7 @@ parser.add_argument('--sig_s', default=25.0, type=float,
                     help='sigma_s in training prior distribution')
 parser.add_argument('--n_model', default=1, type=int,
                     help='Trianing n models with the same hyperparameters')
-parser.add_argument('--model_base_dir', default='../core/model_short_res/', type=str,
+parser.add_argument('--model_base_dir', default='../core/model_short_res_rep/', type=str,
                     help='Trianing n models with the same hyperparameters')
 
 arg = parser.parse_args()
