@@ -58,7 +58,7 @@ def diff_xy(x, y):
     dydx_order = dydx[order]
     return x_order, dydx_order
 
-model_dir_parent = '../core/model_short_res_rep/model_'+str(sigma_s)+'/color_reproduction_delay_unit/' # one rnn model
+model_dir_parent = '../core/model_short_res_40/model_'+str(sigma_s)+'/color_reproduction_delay_unit/' # one rnn model
 rule_name = 'color_reproduction_delay_unit'
 
 angle_list = []

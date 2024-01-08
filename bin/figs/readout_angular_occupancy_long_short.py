@@ -140,13 +140,13 @@ plt.show()
 ######### Compare AO entropy of original model and short-response model (sigma_s = 3.0)
 # '''
 entropy_ori = AO_entropy('../core/model', sigma_s=3.0)
-entropy_short = AO_entropy('../core/model_short_response', sigma_s=3.0)
+entropy_short = AO_entropy('../core/model_short_res_40', sigma_s=3.0)
 
 score_exps = {'Long': entropy_ori,'Short': entropy_short}
 layer_order = {'Long': 0,'Short': 1}
 
 fig, ax = plt.subplots(figsize=(3, 3))
-fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_s=20)
+fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_s=20, show_outlier=False)
 ax.set_ylabel('Entropy of \n the normalized angular occupancy')
 fig.tight_layout()
 fig.savefig('../bin/figs/fig_collect/long_short_AO_entropy_'+period_name+'.svg',format='svg',bbox_inches='tight')

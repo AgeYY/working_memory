@@ -82,12 +82,12 @@ def AO_entropy(model_dir_root, sigma_s, period_name, evolve_period, t='mean'):
 ######### Compare AO entropy of original model and short-response model (sigma_s = 3.0)
 # '''
 entropy_ori = AO_entropy('../core/model', sigma_s=3.0, period_name=period_name, evolve_period=evolve_period, t='mean')
-entropy_short = AO_entropy('../core/model_short_response', sigma_s=3.0, period_name=period_name, evolve_period=evolve_period, t='mean')
+entropy_short = AO_entropy('../core/model_short_res_40', sigma_s=3.0, period_name=period_name, evolve_period=evolve_period, t='mean')
 
 score_exps = {'Long': entropy_ori,'Short': entropy_short}
 layer_order = {'Long': 0,'Short': 1}
 fig, ax = plt.subplots(figsize=(3, 3))
-fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_color='tab:red', jitter_s=30)
+fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_color='tab:red', jitter_s=30, show_outlier=False)
 ax.set_ylabel('Entropy')
 fig.tight_layout()
 fig.savefig('../bin/figs/fig_collect/long_short_response_entropy_'+period_name+'.svg',format='svg',bbox_inches='tight')
