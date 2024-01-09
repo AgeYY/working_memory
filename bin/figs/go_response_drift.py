@@ -19,7 +19,7 @@ plt.rc('axes', linewidth=2)
 prior_sig = 3.0
 rule_name = 'color_reproduction_delay_unit'
 adapted_model_dir_parent = "../core/model_short_res_40/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
-model_dir = 'model_20/'  # example RNN
+model_dir = 'model_5/'  # example RNN
 sub_dir = 'noise_delta/'
 model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
 
