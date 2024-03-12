@@ -23,7 +23,7 @@ sigmas_id = find_indices(sigmas_all, sigmas)
 
 ######### Plot dispersion
 # '''
-with open('fig_data/dynamic_dispersion_40.txt','rb') as fp:
+with open('../bin/figs/fig_data/dynamic_dispersion_40.txt','rb') as fp:
     dispersion_all = pickle.load(fp)
 
 dispersion_all = np.array(dispersion_all)
@@ -36,6 +36,6 @@ layer_order = {'Uniform RNN':0, 'Biased RNN': 1}
 jitter_color_order = {'Biased RNN': '#d62728', 'Uniform RNN': '#1f77b4'}
 fig, ax = plot_layer_boxplot_helper(dispersion_dict, layer_order, jitter_color=jitter_color_order,show_outlier=False)
 
-fig.savefig('fig_collect/dynamic_dispersion_uniform_bias.svg',format='svg',bbox_inches='tight')
+fig.savefig('../bin/figs/fig_collect/dynamic_dispersion_uniform_bias.svg',format='svg',bbox_inches='tight')
 plt.show()
 # '''
