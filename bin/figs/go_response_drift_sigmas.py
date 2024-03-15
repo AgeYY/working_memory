@@ -50,7 +50,7 @@ entropy_end_all = []
 
 for prior_sig in sigmas:
 # file names
-    adapted_model_dir_parent = "../../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
+    adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
     entropy_start_sig = []
     entropy_end_sig = []
 
@@ -132,5 +132,5 @@ bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
 bax.axs[1].set_xticks([90])
 bax.axs[1].set_xticklabels(['90.0'])
 bax.legend(loc='lower right', frameon=False)
-plt.savefig('fig_collect/drift_entropy_'+evolve_period[0]+'_sigmas.svg',format='svg',bbox_inches='tight')
+plt.savefig('figs/fig_collect/drift_entropy_'+evolve_period[0]+'_sigmas.svg',format='svg',bbox_inches='tight')
 plt.show()
