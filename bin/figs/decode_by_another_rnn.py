@@ -143,7 +143,7 @@ ax.set_ylabel('Memory Error (color degree) \n input = common color')
 fig.tight_layout()
 fig.savefig('../bin/figs/fig_collect/cross_decoding.svg',format='svg',bbox_inches='tight')
 
-# Mann-Whitney U test
+# Mann-Whitney U test. Or one can also run the Wilcoxon signed-rank test (paired).
 u_statistic_01, p_value_01 = mannwhitneyu(score_exps['biased delay state\n&\nbiased decoding'], score_exps['uniform delay state\n&\nbiased decoding'])
 u_statistic_23, p_value_23 = mannwhitneyu(score_exps['biased delay state\n&\nuniform decoding'], score_exps['uniform delay state\n&\nuniform decoding'])
 

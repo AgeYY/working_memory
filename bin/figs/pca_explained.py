@@ -15,57 +15,52 @@ from core.agent import Agent, Agent_group
 import sys
 import core.tools as tools
 
-try:
-    model_dir = sys.argv[1]
-    rule_name = sys.argv[2]
-    sub_dir = sys.argv[3]
-except:
-    rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
-    sub_dir = '/noise_delta'
+FONT_SIZE = 15
 
-try:
-    if sys.argv[4] == 'Y': # set false so it will not generate data
-        gen_data = True
-    else:
-        gen_data = False
-except:
-    gen_data = False
+def perform_pca_analysis(group, prod_intervals, pca_degree, n_pca):
+    mplot = MPloter()
 
+    cum_explained_ratio_full = []
+    cum_explained_ratio_delay = []
+    pca_label_full = []
+    pca_label_delay = []
+
+    for sub in group.group:
+        sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=0, sigma_x=0)
+        mplot.load_data(sub.state, sub.epochs, sub.behaviour['target_color'])
+        
+        # Full trial
+        mplot._pca_fit(n_pca, start_time=sub.epochs['stim1'][0] - 1, end_time=sub.epochs['response'][1])
+        pca_ratio_full_temp = np.cumsum(mplot.pca.explained_variance_ratio_)
+        cum_explained_ratio_full.append(pca_ratio_full_temp)
+        label_full = list(range(len(pca_ratio_full_temp)))
+        pca_label_full.append(label_full)
+
+        # Only delay
+        mplot._pca_fit(n_pca, start_time=sub.epochs['interval'][0] - 1, end_time=sub.epochs['interval'][1])
+        pca_ratio_delay_temp = np.cumsum(mplot.pca.explained_variance_ratio_)
+        cum_explained_ratio_delay.append(pca_ratio_delay_temp)
+        label_delay = list(range(len(pca_ratio_delay_temp)))
+        pca_label_delay.append(label_delay)
+
+    pca_label_full = np.concatenate(pca_label_full)
+    pca_label_delay = np.concatenate(pca_label_delay)
+    cum_explained_ratio_full = np.concatenate(cum_explained_ratio_full)
+    cum_explained_ratio_delay = np.concatenate(cum_explained_ratio_delay)
+
+    return pca_label_full, cum_explained_ratio_full, pca_label_delay, cum_explained_ratio_delay
+
+rule_name = 'color_reproduction_delay_unit'
+model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
+sub_dir = '/noise_delta'
+gen_data = True
 prod_intervals=1000
 pca_degree = np.arange(0, 360, 100) # Plot the trajectories of these colors
 n_pca = 5
 
-#sub = Agent(model_dir + sub_dir, rule_name=rule_name)
+# uniform RNN
 group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
-mplot = MPloter()
-
-pca_label_full = []
-pca_label_delay = []
-cum_explained_ratio_full = []
-cum_explained_ratio_delay = []
-
-for sub in group.group:
-    sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=0, sigma_x=0)
-    mplot.load_data(sub.state, sub.epochs, sub.behaviour['target_color'])
-    # full trial
-    mplot._pca_fit(n_pca, start_time=sub.epochs['stim1'][0] - 1, end_time=sub.epochs['response'][1])
-    pca_ratio_full_temp = np.cumsum(mplot.pca.explained_variance_ratio_)
-    cum_explained_ratio_full.append(pca_ratio_full_temp)
-    label_full = range(len(pca_ratio_full_temp))
-    pca_label_full.append(label_full)
-
-    # only delay
-    mplot._pca_fit(n_pca, start_time=sub.epochs['interval'][0] - 1, end_time=sub.epochs['interval'][1])
-    pca_ratio_delay_temp = np.cumsum(mplot.pca.explained_variance_ratio_)
-    cum_explained_ratio_delay.append(pca_ratio_delay_temp)
-    label_delay = range(len(pca_ratio_delay_temp))
-    pca_label_delay.append(label_delay)
-
-pca_label_full = np.array(pca_label_full).flatten()
-pca_label_delay = np.array(pca_label_delay).flatten()
-cum_explained_ratio_full = np.array(cum_explained_ratio_full).flatten()
-cum_explained_ratio_delay = np.array(cum_explained_ratio_delay).flatten()
+pca_label_full, cum_explained_ratio_full, pca_label_delay, cum_explained_ratio_delay = perform_pca_analysis(group, prod_intervals, pca_degree, n_pca)
 
 label_full, mean_y_full, sd_y_full = tools.mean_se(pca_label_full, cum_explained_ratio_full, sd=True)
 label_delay, mean_y_delay, sd_y_delay = tools.mean_se(pca_label_delay, cum_explained_ratio_delay, sd=True)
@@ -73,21 +68,38 @@ label_delay, mean_y_delay, sd_y_delay = tools.mean_se(pca_label_delay, cum_expla
 fig = plt.figure(figsize=(4, 4))
 ax = fig.add_axes([0.2, 0.2, 0.65, 0.6])
 
-ax.errorbar(label_full, mean_y_full, yerr=sd_y_full)
-print(sd_y_full)
-ax.scatter(label_full, mean_y_full, label='Full Trial')
-ax.errorbar(label_delay, mean_y_delay, yerr=sd_y_delay)
-ax.scatter(label_delay, mean_y_delay, label='Delay Epoch')
+ax.errorbar(label_full, mean_y_full, yerr=sd_y_full, linestyle='-', c='tab:blue', label='Full Trial; Uniform')
+ax.scatter(label_full, mean_y_full, c='tab:blue')
+ax.errorbar(label_delay, mean_y_delay, yerr=sd_y_delay, linestyle='dotted', c='tab:blue', label='Delay Epoch; Uniform')
+ax.scatter(label_delay, mean_y_delay, c='tab:blue')
 
+# biased RNN
+model_dir = '../core/model/model_12.5/color_reproduction_delay_unit/'
+group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
+pca_label_full, cum_explained_ratio_full, pca_label_delay, cum_explained_ratio_delay = perform_pca_analysis(group, prod_intervals, pca_degree, n_pca)
+
+label_full, mean_y_full, sd_y_full = tools.mean_se(pca_label_full, cum_explained_ratio_full, sd=True)
+label_delay, mean_y_delay, sd_y_delay = tools.mean_se(pca_label_delay, cum_explained_ratio_delay, sd=True)
+
+ax.errorbar(label_full, mean_y_full, yerr=sd_y_full, linestyle='-', c='tab:red', label='Full Trial; Biased')
+ax.scatter(label_full, mean_y_full, c='tab:red')
+ax.errorbar(label_delay, mean_y_delay, yerr=sd_y_delay, linestyle='dotted', c='tab:red', label='Delay Epoch; Biased')
+ax.scatter(label_delay, mean_y_delay, c='tab:red')
+
+# global settings
 ax.set_xticks([0, 2, 4])
 ax.set_xticklabels([1, 3, 5])
 
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.set_ylabel('Cummulative explained var. ratio')
-ax.set_xlabel('PC')
+
+ax.set_xlabel('PC', fontsize=FONT_SIZE)
+ax.set_ylabel('Cummulative explained var. ratio', fontsize=FONT_SIZE)
+ax.tick_params(axis='x', labelsize=FONT_SIZE)
+ax.tick_params(axis='y', labelsize=FONT_SIZE)
+
 plt.legend()
 
 fig.savefig('./figs/fig_collect/pca_explained.pdf', format='pdf')
 
-#plt.show()
+plt.show()

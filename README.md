@@ -2,7 +2,9 @@
 
 
 ## Introduction
-This repository hosts the code accompanying the paper "Beyond the Delay Neural Dynamics: A Decoding Strategy for Working Memory Error Reduction," where we delve into the significance of the decoding phase in reducing memory errors through the lens of artificial recurrent neural networks (RNNs) tasked with a color delayed-response challenge.
+This repository hosts the code accompanying the paper "Beyond the Delay Neural Dynamics: A Decoding Strategy for Working Memory Error Reduction," where we invesgated the influence of the decoding phase in reducing memory errors through the lens of artificial recurrent neural networks (RNNs).
+
+TODO: Some codes in this repository are redundant and not relevant to the paper.
 
 ## Repository Structure
 
@@ -50,7 +52,11 @@ To replicate our experiments or test the model with different configurations, fo
 - ### Model Training: ###
 Run the training script to train the RNN model on the color delayed-response task. You can adjust the model parameters and training settings in the script.
 ```bash
-conda python ./bin/train_cluster.py
+python ./bin/train_cluster.py
+```
+which also allows parallel training
+```bash
+mpiexec -n n_model python ./bin/train_cluster.py
 ```
 
 - ### Figure reproducing: ###
