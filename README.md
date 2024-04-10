@@ -9,7 +9,7 @@ TODO: Some codes in this repository are redundant and not relevant to the paper.
 ## Repository Structure
 
 - **Results Reproducing**: refer to `./bin/main_figures.ipynb` for codes reproducing the main figures presented in the paper.
-- **Pretrained Models**: Accessible [here](https://wustl.box.com/s/s2mm4h8pf0aurv04kfp4pwd75m5k98pn). Please place the downloaded folder under `./core/`.
+- **Pretrained Models**: Accessible [here](https://wustl.box.com/s/6qvrb1giv5ykzwetllhgg5uv9w4bploo). Please place the downloaded folder under `./core/`.
 - **Figure Data**: To visualize figures without generating new data (which may take hours), locate the `fig_data` folder under `./bin/figs/`. Modify the `--gen_data` option in `./bin/main_figures.ipynb` to `False`, then execute the notebook.
 
 ## Environment Setup
