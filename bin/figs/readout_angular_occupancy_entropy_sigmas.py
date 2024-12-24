@@ -26,7 +26,7 @@ plt.rcParams['ytick.labelsize'] = 15 # Sets the y-axis tick label size
 
 prod_intervals = 800
 n_colors = 500
-batch_size = 1000 # batch size for exact ring initial
+batch_size = 36 # batch size for exact ring initial
 pca_degree = np.linspace(0, 360, n_colors, endpoint=False) # Plot the trajectories of these colors
 sigma_rec=0; sigma_x = 0
 common_color = [40, 130, 220, 310]
@@ -70,7 +70,7 @@ def diff_xy(x, y):
 
 
 ######### Calculation
-'''
+# '''
 entropy_all = []
 for sigma_s in sigma_s_list:
     entropy_sig = []

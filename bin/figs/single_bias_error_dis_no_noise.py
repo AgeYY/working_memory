@@ -48,10 +48,10 @@ def color_mse(input_color,f,prior_sig,batch_size=5000, sigma_rec=None, sigma_x=N
     return mse_sub
 
 
-sigma_rec = None
-sigma_x = None
+sigma_rec = 0
+sigma_x = 0
 n_model = 50
-input_color_range = range(85,176,3)
+input_color_range = range(120,140,1)
 
 ################# MSE of multiple input colors for biased and uniform prior models
 # '''
@@ -105,59 +105,23 @@ memory_error_uniform = np.sqrt(mse_color_uniform)
 # Colors for plot
 colors = input_color_range
 
-## MSE
-#mean_mse_biased = np.mean(mse_color_biased,axis=0)
-#se_mse_biased = np.std(mse_color_biased,axis=0) / math.sqrt(len(colors))
-#
-#mean_mse_uniform = np.mean(mse_color_uniform,axis=0)
-#se_mse_uniform = np.std(mse_color_uniform,axis=0) / math.sqrt(len(colors))
-
 ## memory error
 mean_error_biased = np.mean(memory_error_biased,axis=0)
 se_error_biased = np.std(memory_error_biased,axis=0) / math.sqrt(len(colors))
 
-mean_error_uniform = np.mean(memory_error_uniform,axis=0)
-se_error_uniform = np.std(memory_error_uniform,axis=0) / math.sqrt(len(colors))
+fig,ax = plt.subplots(1,1,figsize=(3,3))
 
-# Prior distribution
-color_sampling = Color_input()
-color_sampling.add_samples()
+ax.plot(colors, mean_error_biased, 'r.-',label='Biased')
+ax.fill_between(colors, mean_error_biased-se_error_biased, mean_error_biased+se_error_biased,alpha=0.5,color='r')
 
-color_sampling.prob(method='vonmises', bias_centers=[40, 130, 220, 310], sig=12.5)
-rand_colors_biased = color_sampling.out_color_degree(batch_size=20000)
-
-color_sampling.prob(method='vonmises', bias_centers=[40, 130, 220, 310], sig=90.0)
-rand_colors_uniform = color_sampling.out_color_degree(batch_size=20000)
-
-
-fig,ax = plt.subplots(2,1,sharex=True,figsize=(5,7))
-
-
-ax[0].hist(rand_colors_uniform, bins=list(np.arange(0, 360, 4)),density=True,label='Uniform',alpha=0.9,color='b')
-ax[0].hist(rand_colors_biased, bins=list(np.arange(0, 360, 4)),density=True,label='Biased',alpha=0.9,color='r')
-ax[0].axvline(130,color='k',linestyle='--',label='Common color')
-ax[0].set_xlim((85,175))
-ax[0].spines['top'].set_visible(False)
-ax[0].spines['right'].set_visible(False)
-# ax[0].set_xlabel('Color',fontsize=15)
-ax[0].set_ylabel('Prior Probability Density',fontsize=15)
-ax[0].legend()
-
-
-ax[1].plot(colors, mean_error_uniform, 'b.-',label='Uniform')
-ax[1].fill_between(colors, mean_error_uniform-se_error_uniform, mean_error_uniform+se_error_uniform,alpha=0.5,color='b')
-ax[1].plot(colors, mean_error_biased, 'r.-',label='Biased')
-ax[1].fill_between(colors, mean_error_biased-se_error_biased, mean_error_biased+se_error_biased,alpha=0.5,color='r')
-
-
-ax[1].axvline(130,color='k',linestyle='--')
-ax[1].spines['top'].set_visible(False)
-ax[1].spines['right'].set_visible(False)
-ax[1].set_xlabel('Color',fontsize=15)
-ax[1].set_ylabel('Memory Error \n for a Fixed Input Color',fontsize=15)
+ax.axvline(130,color='k',linestyle='--')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.set_xlabel('Color',fontsize=15)
+ax.set_ylabel('Memory Error \n for a Fixed Input Color',fontsize=15)
 plt.legend()
 plt.tight_layout()
-plt.savefig('../bin/figs/fig_collect/color_mse_example.svg',format='svg')
+plt.savefig('../bin/figs/fig_collect/single_bias_error_dis_no_noise.svg',format='svg')
 plt.show()
 
 
