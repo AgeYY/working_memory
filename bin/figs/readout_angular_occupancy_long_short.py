@@ -144,6 +144,7 @@ entropy_short = AO_entropy('../core/model_short_res_40', sigma_s=3.0)
 
 score_exps = {'Long': entropy_ori,'Short': entropy_short}
 layer_order = {'Long': 0,'Short': 1}
+print(score_exps)
 
 fig, ax = plt.subplots(figsize=(3, 3))
 fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_s=20, show_outlier=False)

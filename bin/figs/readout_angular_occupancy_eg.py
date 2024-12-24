@@ -58,7 +58,7 @@ def diff_xy(x, y):
     dydx_order = dydx[order]
     return x_order, dydx_order
 
-model_dir_parent = '../core/model_short_res_40/model_'+str(sigma_s)+'/color_reproduction_delay_unit/' # one rnn model
+model_dir_parent = '../core/model/model_'+str(sigma_s)+'/color_reproduction_delay_unit/' # one rnn model
 rule_name = 'color_reproduction_delay_unit'
 
 angle_list = []
@@ -99,6 +99,7 @@ ax.grid(False)
 ax.set_xticks([0, 180, 360])
 ax.set_xlabel(r'Color $\phi$')
 ax.set_ylabel(r'$d\theta/d\phi$')
+ax.set_ylim([0, 4.0])
 
 ax.axhline(y = 1, linestyle = '--', linewidth = 1, color = 'k')
 for cc_i in common_color:

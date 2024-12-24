@@ -103,8 +103,6 @@ class Degree_color():
 class Color_cell():
     '''
     convert degree to the firing rate of color cell (doesn't exist)
-    ri = A_in(t) (exp[-1/2 (|yi - x| / 2 / sigma)^2] + exp[-1/2 ((360 - |yi - x|) / 2 / sigma)^2])
-    where ri is the firing rate and yi is the sampling center of the ith color cell. x is the input color (degree)
     '''
     def __init__(self, n_unit, sigma = None):
         # n_unit (int): the number of color cell which are uniformly distributed from 0 to 360

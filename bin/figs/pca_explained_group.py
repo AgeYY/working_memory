@@ -21,7 +21,7 @@ try:
     sub_dir = sys.argv[3]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
     sub_dir = '/noise_delta'
 
 try:
@@ -31,6 +31,7 @@ try:
         gen_data = False
 except:
     gen_data = False
+gen_data = True
 
 prod_intervals=2000 # set the delay time to 800 ms for ploring the trajectory
 pca_degree = np.arange(0, 360, 15) # Plot the trajectories of these colors
@@ -66,10 +67,10 @@ ax = fig.add_axes([0.2, 0.2, 0.65, 0.6])
 
 label, mean_y, sd_y = tools.mean_se(pca_pd['pca_label'], pca_pd['cum_explained_ratio'], sd=True)
 ax.scatter(label, mean_y, c='black')
-ax.plot(label, mean_y, c='black')
+# ax.plot(label, mean_y, c='black')
 print('pca_explained:', mean_y)
 print('sd error of pca_explained:', sd_y)
-#plt.errorbar(label, mean_y, yerr=se_y) # the standard deviation is negnegiable (~10^-2).
+plt.errorbar(label, mean_y, yerr=sd_y, c='black') # the standard deviation is negnegiable (~10^-2).
 
 ax.set_xticks([0, 2, 4])
 ax.set_xticklabels([1, 3, 5])
@@ -81,4 +82,4 @@ ax.set_xlabel('PC')
 
 fig.savefig('./figs/fig_collect/pca_explained.pdf', format='pdf')
 
-#plt.show()
+plt.show()
