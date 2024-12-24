@@ -107,32 +107,30 @@ def cross_decoding(delay_sig_s, decode_sig_s, delay_model=0, decode_model=0, inp
     return math.sqrt(mse)
 
 
-# mse_uni_uni = []  # uniform delay and decode
-# mse_bias_bias = []  # biased delay and decode
-# mse_uni_bias = []  # uniform delay and biased decode
-# mse_bias_uni = []  # biased delay and uniform decode
+mse_uni_uni = []  # uniform delay and decode
+mse_bias_bias = []  # biased delay and decode
+mse_uni_bias = []  # uniform delay and biased decode
+mse_bias_uni = []  # biased delay and uniform decode
 
-# for k in range(n_sampling):
-#     print(k)
-#     model_1, model_2 = random.sample(list(np.arange(50)),2)
-#     mse_uni_uni.append(cross_decoding(uniform_sigma, uniform_sigma, model_1, model_2))
-#     mse_bias_bias.append(cross_decoding(biased_sigma, biased_sigma, model_1, model_2))
-#     mse_uni_bias.append(cross_decoding(uniform_sigma, biased_sigma, model_1, model_2))
-#     mse_bias_uni.append(cross_decoding(biased_sigma, uniform_sigma, model_1, model_2))
+for k in range(n_sampling):
+    print(k)
+    model_1, model_2 = random.sample(list(np.arange(50)),2)
+    mse_uni_uni.append(cross_decoding(uniform_sigma, uniform_sigma, model_1, model_2))
+    mse_bias_bias.append(cross_decoding(biased_sigma, biased_sigma, model_1, model_2))
+    mse_uni_bias.append(cross_decoding(uniform_sigma, biased_sigma, model_1, model_2))
+    mse_bias_uni.append(cross_decoding(biased_sigma, uniform_sigma, model_1, model_2))
 
-# # plt.boxplot([mse_bias_bias,mse_uni_bias,mse_bias_uni,mse_uni_uni], showfliers=False)
-# # plt.show()
 
-# score_exps = {'biased delay state\n&\nbiased decoding': mse_bias_bias,
-#               'uniform delay state\n&\nbiased decoding': mse_uni_bias,
-#               'biased delay state\n&\nuniform decoding': mse_bias_uni,
-#               'uniform delay state\n&\nuniform decode': mse_uni_uni}
-# layer_order = {'biased delay state\n&\nbiased decoding': 0,
-#               'uniform delay state\n&\nbiased decoding': 1,
-#               'biased delay state\n&\nuniform decoding': 2,
-#               'uniform delay state\n&\nuniform decode': 3}
-# data = {'score_exps': score_exps, 'layer_order': layer_order}
-# hkl.dump(data, '../bin/figs/fig_data/cross_decoding.hkl', mode='w')
+score_exps = {'biased delay state\n&\nbiased decoding': mse_bias_bias,
+              'uniform delay state\n&\nbiased decoding': mse_uni_bias,
+              'biased delay state\n&\nuniform decoding': mse_bias_uni,
+              'uniform delay state\n&\nuniform decoding': mse_uni_uni}
+layer_order = {'biased delay state\n&\nbiased decoding': 0,
+              'uniform delay state\n&\nbiased decoding': 1,
+              'biased delay state\n&\nuniform decoding': 2,
+              'uniform delay state\n&\nuniform decoding': 3}
+data = {'score_exps': score_exps, 'layer_order': layer_order}
+hkl.dump(data, '../bin/figs/fig_data/cross_decoding.hkl', mode='w')
 
 data = hkl.load('../bin/figs/fig_data/cross_decoding.hkl')
 score_exps = data['score_exps']; layer_order = data['layer_order']
@@ -145,12 +143,12 @@ ax.set_ylabel('Memory Error (color degree) \n input = common color')
 fig.tight_layout()
 fig.savefig('../bin/figs/fig_collect/cross_decoding.svg',format='svg',bbox_inches='tight')
 
-# Mann-Whitney U test
+# Mann-Whitney U test. Or one can also run the Wilcoxon signed-rank test (paired).
 u_statistic_01, p_value_01 = mannwhitneyu(score_exps['biased delay state\n&\nbiased decoding'], score_exps['uniform delay state\n&\nbiased decoding'])
-u_statistic_23, p_value_23 = mannwhitneyu(score_exps['biased delay state\n&\nuniform decoding'], score_exps['uniform delay state\n&\nuniform decode'])
+u_statistic_23, p_value_23 = mannwhitneyu(score_exps['biased delay state\n&\nuniform decoding'], score_exps['uniform delay state\n&\nuniform decoding'])
 
 t_statistic_01, p_value_t_01 = ttest_ind(score_exps['biased delay state\n&\nbiased decoding'], score_exps['uniform delay state\n&\nbiased decoding'])
-t_statistic_23, p_value_t_23 = ttest_ind(score_exps['biased delay state\n&\nuniform decoding'], score_exps['uniform delay state\n&\nuniform decode'])
+t_statistic_23, p_value_t_23 = ttest_ind(score_exps['biased delay state\n&\nuniform decoding'], score_exps['uniform delay state\n&\nuniform decoding'])
 
 print(p_value_01, p_value_23)
 print(p_value_t_01, p_value_t_23)

@@ -52,7 +52,7 @@ def color_mse(input_color,f,prior_sig,batch_size=5000):
     return mse_sub
 
 
-################# Calculate color mse of adapted/unadapted model with input drawn from different piror distribution
+################# Calculate color mse of adapted/unadapted model with input drawn from different piror distribution. Uncomment this to run the code will run all models.
 '''
 sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
 model_names = [str(s) for s in sigmas]

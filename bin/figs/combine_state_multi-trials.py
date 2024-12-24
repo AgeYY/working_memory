@@ -54,15 +54,6 @@ sigma_rec=0; sigma_x = 0
 xlim=[-30, 30]; ylim=[-30, 30]; edge_batch_size=150;
 traj_id = int(n_colors / 2.0)
 spacing_time = 3 # every two dots in the trajectory would be 20 ms * spacing_time
-########## for searching fixpoints
-n_epochs = 20000
-lr=1
-speed_thre = None # speed lower than this we consider it as fixpoints, slow points otherwise
-initial_type='delay_ring'
-milestones = [6000, 12000, 18000]
-batch_size_fp = 500
-sigma_init = 0 # Specify the noise adding on initial searching points
-prod_interval_search = 100
 
 def gen_data_func(n_trails=100):
     ########## Color boundary

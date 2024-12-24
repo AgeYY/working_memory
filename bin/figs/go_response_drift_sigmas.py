@@ -7,7 +7,7 @@ from core.rnn_decoder import RNN_decoder
 import hickle as hkl
 #from core.state_evolver import evolve_recurrent_state
 from core.state_evolver import State_Evolver
-from core.tools import state_to_angle
+from core.tools import state_to_angle, find_indices, removeOutliers
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
 from brokenaxes import brokenaxes
@@ -44,6 +44,7 @@ edge_batch_size = 50 # number of points in each direction
 period_name = 'response' # can be response, of interval PC1-PC2 plane
 evolve_period = ['response', 'response']
 
+######## Entropy calculation
 entropy_start_all = []
 entropy_end_all = []
 
@@ -87,6 +88,8 @@ for prior_sig in sigmas:
 
         print('Sigma_s={s}, model {i}: entropy_s = {es}, entropy_end = {ee}'.format(s=prior_sig, i=i, es=entropy_s,ee=entropy_e))
 
+    # entropy_start_all.append(list(removeOutliers(np.array(entropy_start_sig))))
+    # entropy_end_all.append(list(removeOutliers(np.array(entropy_end_sig))))
     entropy_start_all.append(entropy_start_sig)
     entropy_end_all.append(entropy_end_sig)
 
@@ -102,16 +105,17 @@ for prior_sig in sigmas:
 entropy_start_all = np.array(entropy_start_all)
 entropy_end_all = np.array(entropy_end_all)
 
-entropy_start_mean = list(np.mean(entropy_start_all,axis=1))
+######## Plot the figure
+entropy_start_mean = [np.mean(removeOutliers(entropy_start_all[i])) for i in range(entropy_start_all.shape[0])]
 # entropy_start_ste = list(np.std(entropy_start_all, axis=1) / math.sqrt(entropy_start_all.shape[1]))
-entropy_start_std = list(np.std(entropy_start_all, axis=1) )
-print(entropy_start_std)
-entropy_end_mean = list(np.mean(entropy_end_all,axis=1))
+entropy_start_std = [np.std(removeOutliers(entropy_start_all[i])) for i in range(entropy_start_all.shape[0])]
+print(len(entropy_start_mean))
+
+entropy_end_mean =[np.mean(removeOutliers(entropy_end_all[i])) for i in range(entropy_end_all.shape[0])]
 # entropy_end_ste = list(np.std(entropy_end_all, axis=1) / math.sqrt(entropy_end_all.shape[1]))
-entropy_end_std = list(np.std(entropy_end_all, axis=1))
-print(entropy_end_std)
-
-
+entropy_end_std = [np.std(removeOutliers(entropy_end_all[i])) for i in range(entropy_end_all.shape[0])]
+print(len(entropy_end_std))
+print(len(sigmas))
 ########
 
 fig = plt.figure(figsize=(3,3))
@@ -128,5 +132,5 @@ bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
 bax.axs[1].set_xticks([90])
 bax.axs[1].set_xticklabels(['90.0'])
 bax.legend(loc='lower right', frameon=False)
-plt.savefig('./figs/fig_collect/drift_entropy_'+evolve_period[0]+'_sigmas.svg',format='svg',bbox_inches='tight')
+plt.savefig('figs/fig_collect/drift_entropy_'+evolve_period[0]+'_sigmas.svg',format='svg',bbox_inches='tight')
 plt.show()

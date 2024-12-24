@@ -23,7 +23,7 @@ except:
     rule_name = 'color_reproduction_delay_unit'
     model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
     sub_dir = '/model_0/noise_delta'
-    out_dir = './figs/fig_collect/angle'
+    out_dir = './figs/fig_collect/angle_occupation'
 
 try:
     if sys.argv[4] == 'Y': # set false so it will not generate data
@@ -161,6 +161,6 @@ for cc_i in common_color:
     ax.axvline(x = cc_i, linestyle = '--', linewidth = 1, color = 'black')
 
 
-fig.savefig(out_dir + '_density.svg', format='svg')
+fig.savefig(out_dir + '.svg', format='svg')
 
 plt.show()
