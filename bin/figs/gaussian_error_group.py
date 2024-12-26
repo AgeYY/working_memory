@@ -13,7 +13,7 @@ try:
     sub_dir = sys.argv[3]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
     sub_dir = '/noise_delta'
 
 try:
@@ -27,8 +27,8 @@ except:
 noise_on = True
 prod_int_short = 200
 prod_int_long = 1000
-batch_size = 2000
-sigma_rec = None; sigma_x = None # set the noise to be default (training value)
+batch_size = 1000
+sigma_rec = None; sigma_x = 0 # set the noise to be default (training value)
 out_path_short = './figs/fig_data/fig1_short_tri_noise.csv'
 out_path_long = './figs/fig_data/fig1_long_tri_noise.csv'
 
@@ -73,7 +73,7 @@ def plot_error_dist(error_df, legend=['Short', 'Long'], ylim=[0, 7e-3], with_lab
     ax.spines['left'].set_visible(True)
     ax.grid(False)
     ax.set_xticks([-180, 0, 180])
-    ax.set_xticklabels(['0', '180', '360'])
+    ax.set_xticklabels(['-180', '0', '180'])
     ax.set_yticks([0, ylim[1]])
     ax.tick_params(direction='in')
     

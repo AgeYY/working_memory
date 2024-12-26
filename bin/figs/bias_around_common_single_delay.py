@@ -1,4 +1,5 @@
 import context
+import statsmodels.api as sm
 from core.data_plot import color_reproduction_dly_lib as clib
 from core.color_manager import Degree_color
 import matplotlib.pyplot as plt
@@ -7,35 +8,6 @@ import seaborn as sns
 from core.agent import Agent, Agent_group
 import pandas as pd
 import sys
-
-out_path_unbias = './figs/fig_data/unbias_common.csv'
-out_path_bias = './figs/fig_data/bias_common.csv'
-
-try:
-    model_dir = sys.argv[1]
-    rule_name = sys.argv[2]
-    sub_dir = sys.argv[3]
-except:
-    rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model/model_30.0/color_reproduction_delay_unit/'
-    sub_dir = '/noise_delta'
-
-try:
-    if sys.argv[4] == 'Y': # set false so it will not generate data
-        gen_data = True
-    else:
-        gen_data = False
-except:
-    gen_data = False
-
-gen_data = True
-
-batch_size = 1000 # how many test trials
-prod_intervals = np.array([0, 1000])
-common_color = [40, 130, 220, 310] # high prob values
-reg_up = 15; reg_low = -15; # regression range from common_color - 15 to common_color + 15
-sigma_rec=None; sigma_x=None
-bin_size = 2
 
 # calculate the mean and se
 def mean_se(x, y, epsilon = 1e-5):
@@ -63,115 +35,116 @@ def mean_se(x, y, epsilon = 1e-5):
     se_y = np.array(se_y)
     return target, mean_y, se_y
 
-def output_data(sub_dir, out_path):
-    group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
-    print(model_dir, sub_dir)
-    group.do_batch_exp(prod_intervals=prod_intervals[0], sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, bin_size=bin_size)
-    dire_s = group.group_behaviour.copy()
-    group.do_batch_exp(prod_intervals=prod_intervals[1], sigma_rec=sigma_rec, batch_size=batch_size, bin_size=bin_size, sigma_x=sigma_x)
-    dire_l = group.group_behaviour.copy()
-
-    target_common_s, bias_s = clib.bias_around_common(dire_s['report_color'], dire_s['target_color'], common_color)
-    target_common_l, bias_l = clib.bias_around_common(dire_l['report_color'], dire_l['target_color'], common_color)
-
-    # stack into dic
-    dire_dic = {
-        'target_common_s': target_common_s,
-        'target_common_l': target_common_l,
-        'bias_s': bias_s,
-        'bias_l': bias_l
-    }
-
-    dire_df = pd.DataFrame(dire_dic)
-    dire_df.to_csv(out_path)
-
-if gen_data:
-    output_data(sub_dir, out_path_bias)
-    output_data('/noise', out_path_unbias)
-
-#### Linear regression
-import statsmodels.api as sm
-
-def gen_reg_line(target, bias):
+def gen_reg_line(target, bias, reg_up, reg_low):
     '''
     linear fitting for target within a range
-    input:
-      target could be simply dire_df['target_common_s'] which should be a pandas series. Also bias
-      target (array): independent variable
-      bias (array): dependent variable
-      reg_up, reg_low: range of independent variable
-    output:
-      x_regs (array): independent variable
-      y_regs (array): prediction
-      p_value (array): pvalue
     '''
-    X = target.to_numpy()
-    X_idx = (X < reg_up) * (X > reg_low) # we only regression the middle region of the data
+    X = target
+    X_idx = (X < reg_up) * (X > reg_low)
     X = X[X_idx].reshape((-1, 1))
     X2 = sm.add_constant(X)
-    y = bias.to_numpy()[X_idx]
+    y = bias[X_idx]
 
     est = sm.OLS(y, X2)
     est2 = est.fit()
 
-    # data for regression line
+    # Get slope and confidence intervals
+    slope = est2.params[1]
+    ci = est2.conf_int(alpha=0.05)
+    slope_ci_low, slope_ci_high = ci[1]
+
     x_regs = np.linspace(reg_low, reg_up, 1000)
     y_regs = est2.params[0] + est2.params[1] * x_regs
     p_value = est2.summary2().tables[1]['P>|t|'][1]
 
-    return x_regs, y_regs, p_value
+    return x_regs, y_regs, p_value, slope, (slope_ci_low, slope_ci_high)
 
-
-sns.set()
-sns.set_style("ticks")
-
-def plot_bias(target_common_s, bias_s, target_common_l, bias_l):
+def plot_bias(target_common, bias, reg_up, reg_low):
     '''
-    all inputs should be pd series
+    Modified to plot only one condition
     '''
     fig = plt.figure(figsize=(3, 3))
     ax = fig.add_axes([0.2, 0.3, 0.63, 0.6])
 
     ### regression line
-    x_s_regs, y_s_regs, p_value_s = gen_reg_line(target_common_s, bias_s)
-    x_l_regs, y_l_regs, p_value_l = gen_reg_line(target_common_l, bias_l)
+    x_regs, y_regs, p_value, slope, ci = gen_reg_line(target_common, bias, reg_up, reg_low)
 
     ### band
-    target, mean_error, se_error = mean_se(target_common_s, bias_s)
+    target, mean_error, se_error = mean_se(target_common, bias)
     ax.fill_between(target, mean_error - se_error, mean_error + se_error, alpha=0.4)
 
-    target, mean_error, se_error = mean_se(target_common_l, bias_l)
-    ax.fill_between(target, mean_error - se_error, mean_error + se_error, alpha=0.4)
     #### Plot figures
-    ax.plot(x_s_regs, y_s_regs, label='0.1s')
-    ax.plot(x_l_regs, y_l_regs, label='1.0s')
+    ax.plot(x_regs, y_regs, label='1.0s')
+    ax.legend([ax.lines[0]], ['1.0s'], loc='upper right', frameon=False, handlelength=1.5)
 
-    ax.legend([ax.lines[0], ax.lines[1]], ['0.1s', '1.0s'], loc='upper right', frameon=False, handlelength=1.5)
-
-    ax.set_xlim([-30, 30]) # there is end effect for calculating ci
-    ax.set_ylim([-5, 5]) # there is end effect for calculating ci
+    ax.set_xlim([-30, 30])
+    ax.set_ylim([-5, 5])
     ax.set_xticks([-30, 0, 30])
     ax.set_yticks([-5, 0, 5])
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    return fig, ax
+    return fig, ax, slope, ci
 
-#### read the data
-## bias_rnn, i.e. models trained with biased distribution
-dire_df = pd.read_csv(out_path_bias)
+rule_name = 'color_reproduction_delay_unit'
+model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
+sub_dir = '/noise_delta'
+prod_intervals = np.concatenate([np.arange(0, 1800, 200), [1800]])
+sigma_rec = None; sigma_x = None
+batch_size = 1000
+bin_size = 2
+common_color = [40, 130, 220, 310] # high prob values
+reg_up = 15; reg_low = -15; # regression range from common_color - 15 to common_color + 15
 
-fig, ax = plot_bias(dire_df['target_common_s'], dire_df['bias_s'], dire_df['target_common_l'], dire_df['bias_l'])
-fig.savefig('./figs/fig_collect/bias_rnn.pdf', format='pdf')
-#ax.set_xlabel('Target color (deg)')
-#plt.show()
+# Add function to compute slopes for all intervals
+def compute_slopes_for_interval(prod_interval):
+    group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
+    group.do_batch_exp(prod_intervals=prod_interval, sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, bin_size=bin_size)
+    dire = group.group_behaviour.copy()
+    
+    target_common, bias = clib.bias_around_common(dire['report_color'], dire['target_color'], common_color)
+    _, _, _, slope, (ci_low, ci_high) = gen_reg_line(target_common, bias, reg_up, reg_low)
+    
+    return slope, ci_low, ci_high
 
-## unbias_rnn, i.e. models trained with uniform distribution
-dire_df = pd.read_csv(out_path_unbias)
+# Compute slopes and CIs for all intervals
+slopes = []
+ci_lows = []
+ci_highs = []
 
-fig, ax = plot_bias(dire_df['target_common_s'], dire_df['bias_s'], dire_df['target_common_l'], dire_df['bias_l'])
-#ax.set_xlabel('Target color (deg)')
-#ax.set_ylabel('Report - Target (deg)')
-fig.savefig('./figs/fig_collect/unbias_rnn.pdf', format='pdf')
-#plt.show()
+print("Computing slopes for all intervals...")
+for interval in prod_intervals:
+    print(f"Processing interval {interval}ms")
+    slope, ci_low, ci_high = compute_slopes_for_interval(interval)
+    slopes.append(slope)
+    ci_lows.append(ci_low)
+    ci_highs.append(ci_high)
+
+# Convert to numpy arrays
+slopes = np.array(slopes)
+ci_lows = np.array(ci_lows)
+ci_highs = np.array(ci_highs)
+
+# Plot the results
+fig = plt.figure(figsize=(4, 3))
+ax = fig.add_axes([0.2, 0.2, 0.7, 0.7])
+
+# Plot slope with error bars
+ax.errorbar(prod_intervals, slopes, yerr=[slopes-ci_lows, ci_highs-slopes], 
+            fmt='o-', capsize=2, markersize=4, color='black')
+
+ax.set_xlabel('Production interval (ms)')
+ax.set_ylabel('Slope')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+# Save the results
+fig.savefig('./figs/fig_collect/slopes_vs_interval.pdf', format='pdf')
+
+# Print the final slopes and CIs
+print("\nFinal results:")
+for interval, slope, ci_l, ci_h in zip(prod_intervals, slopes, ci_lows, ci_highs):
+    print(f"Interval {interval}ms - Slope: {slope:.4f}, 95% CI: [{ci_l:.4f}, {ci_h:.4f}]")
+
+plt.show()
