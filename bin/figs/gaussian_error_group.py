@@ -28,7 +28,7 @@ noise_on = True
 prod_int_short = 200
 prod_int_long = 1000
 batch_size = 1000
-sigma_rec = None; sigma_x = 0 # set the noise to be default (training value)
+sigma_rec = None; sigma_x = None # set the noise to be default (training value)
 out_path_short = './figs/fig_data/fig1_short_tri_noise.csv'
 out_path_long = './figs/fig_data/fig1_long_tri_noise.csv'
 
@@ -90,4 +90,4 @@ fig, ax = plot_error_dist(error_df, ylim=[0, 20e-3], legend=['0.2s', '1.0s'])
 ax.set_xlabel('Response value - Stimulus', fontsize=fs)
 ax.set_ylabel('Density', fontsize=fs)
 fig.savefig('./figs/fig_collect/gaussian_rnn.pdf', format='pdf')
-#plt.show()
+plt.show()

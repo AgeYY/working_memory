@@ -90,7 +90,7 @@ def plot_bias(target_common, bias, reg_up, reg_low):
 rule_name = 'color_reproduction_delay_unit'
 model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
 sub_dir = '/noise_delta'
-prod_intervals = np.concatenate([np.arange(0, 1800, 200), [1800]])
+prod_intervals = np.arange(100, 1200, 200)
 sigma_rec = None; sigma_x = None
 batch_size = 1000
 bin_size = 2

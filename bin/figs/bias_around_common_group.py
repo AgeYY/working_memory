@@ -17,7 +17,7 @@ try:
     sub_dir = sys.argv[3]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
     sub_dir = '/noise_delta'
 
 try:
@@ -28,7 +28,9 @@ try:
 except:
     gen_data = False
 
-batch_size = 2000 # how many test trials
+gen_data = True
+
+batch_size = 1000 # how many test trials
 prod_intervals = np.array([100, 1000])
 common_color = [40, 130, 220, 310] # high prob values
 reg_up = 15; reg_low = -15; # regression range from common_color - 15 to common_color + 15
@@ -141,10 +143,10 @@ def plot_bias(target_common_s, bias_s, target_common_l, bias_l):
     target, mean_error, se_error = mean_se(target_common_l, bias_l)
     ax.fill_between(target, mean_error - se_error, mean_error + se_error, alpha=0.4)
     #### Plot figures
-    ax.plot(x_s_regs, y_s_regs, label='0.1s')
+    ax.plot(x_s_regs, y_s_regs, label='0.2s')
     ax.plot(x_l_regs, y_l_regs, label='1.0s')
 
-    ax.legend([ax.lines[0], ax.lines[1]], ['0.1s', '2.0s'], loc='upper right', frameon=False, handlelength=1.5)
+    ax.legend([ax.lines[0], ax.lines[1]], ['0.2s', '1.0s'], loc='upper right', frameon=False, handlelength=1.5)
 
     ax.set_xlim([-30, 30]) # there is end effect for calculating ci
     ax.set_ylim([-5, 5]) # there is end effect for calculating ci
