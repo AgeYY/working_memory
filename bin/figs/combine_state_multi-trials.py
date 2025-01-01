@@ -80,8 +80,8 @@ def gen_data_func(n_trails=100):
     hhelper = Hidden0_helper(hidden_size=hidden_size)
     for _ in range(n_trails):
         sub_2 = Agent(model_dir + sub_dir, rule_name)
-        sub_2.do_exp(prod_intervals=prod_intervals, ring_centers=[input_color], sigma_rec=0.5, sigma_x=sigma_x)
-        hidden0_ring = sub_2.state[sub_2.epochs['interval'][0]:sub_2.epochs['interval'][1], 0, :].reshape((-1, 256)) # pick the traj_id trial. Cut the first 100ms
+        sub_2.do_exp(prod_intervals=prod_intervals, ring_centers=[input_color], sigma_rec=None, sigma_x=None)
+        hidden0_ring = sub_2.state[sub_2.epochs['interval'][1]:sub_2.epochs['interval'][1] + 1, 0, :].reshape((-1, 256)) # pick the traj_id trial. Cut the first 100ms
         hidden0_ring_pca = pca.transform(hidden0_ring)
         hidden0_ring_pca_list.append(hidden0_ring_pca)
 

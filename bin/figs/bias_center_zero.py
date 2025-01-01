@@ -32,8 +32,6 @@ error_color_short = output_data(prod_int_short)
 error_color_long = output_data(prod_int_long)
 error_color_short = error_color_short.reshape(-1, batch_size) # reshape, each row is a batch of one RNN
 error_color_long = error_color_long.reshape(-1, batch_size) # reshape, each row is a batch of one RNN
-# error_color_short = [np.mean(removeOutliers(error_color_short[i])) for i in range(error_color_short.shape[0])]
-# error_color_long = [np.mean(removeOutliers(error_color_long[i])) for i in range(error_color_long.shape[0])]
 error_color_short = np.mean(error_color_short, axis=1)
 error_color_long = np.mean(error_color_long, axis=1)
 error_color = {'Short': error_color_short, 'Long': error_color_long}

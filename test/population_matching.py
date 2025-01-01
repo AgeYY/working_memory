@@ -32,7 +32,7 @@ biased_sigma = 12.5
 input_color = 40
 batch_size = 50
 prod_int = 800
-n_sampling = 50  # number of bootstrapping
+n_sampling = 5  # number of cross decoding pairs
 sigma_rec = None; sigma_x = None # set the noise to be default (training value)
 sub_dir = 'noise_delta/'
 rule_name = 'color_reproduction_delay_unit'
@@ -66,15 +66,22 @@ def cross_decoding(delay_sig_s, decode_sig_s, delay_model=0, decode_model=0, inp
 
     #### load the two RNNs
     delay_sub = Agent(delay_f, rule_name)
-    delay_sa = Struct_analyzer()
-    delay_sa.read_rnn_agent(delay_sub)
-    _, _, delay_neuron_label, _ = delay_sa.prepare_label(sigma_rec=0, sigma_x=0, method='rnn_decoder', label_neuron_by_mean=False, generate_state_method='delay_ring') # use label_by_mean=False to use tuning peaks not mean; use generate_state_method='delay_ring' to obtain densor state
-
     decode_sub = Agent(decode_f, rule_name)
-    decode_sa = Struct_analyzer()
-    decode_sa.read_rnn_agent(decode_sub)
-    _, _, decode_neuron_label, _ = decode_sa.prepare_label(sigma_rec=0, sigma_x=0, method='rnn_decoder', label_neuron_by_mean=False, generate_state_method='delay_ring') 
 
+    #### Representation matching
+    input_colors_matching = np.random.uniform(0, 360, 1000)
+
+    delay_sub.do_exp(prod_intervals=prod_int, ring_centers=input_colors_matching, sigma_rec=sigma_rec, sigma_x=sigma_x)
+    delay_states_delay_sub = delay_sub.state[delay_sub.epochs['interval'][-1]]
+    print(delay_states_delay_sub.shape)
+    exit()
+
+    decode_sub.do_exp(prod_intervals=prod_int, ring_centers=input_colors_matching, sigma_rec=sigma_rec, sigma_x=sigma_x)
+    decode_states_decode_sub = decode_sub.state[decode_sub.epochs['interval'][-1]]
+
+
+
+    #### Population matching
     input_colors = np.ones(batch_size)*input_color
 
     ######### Method 1: reorder the neuron states of delay
@@ -148,17 +155,11 @@ fig.savefig('../bin/figs/fig_collect/cross_decoding.svg',format='svg',bbox_inche
 # Mann-Whitney U test. Or one can also run the Wilcoxon signed-rank test (paired).
 u_statistic_01, p_value_01 = mannwhitneyu(score_exps['biased delay state\n&\nbiased decoding'], score_exps['uniform delay state\n&\nbiased decoding'])
 u_statistic_23, p_value_23 = mannwhitneyu(score_exps['biased delay state\n&\nuniform decoding'], score_exps['uniform delay state\n&\nuniform decoding'])
-u_statistic_02, p_value_02 = mannwhitneyu(score_exps['biased delay state\n&\nbiased decoding'], score_exps['biased delay state\n&\nuniform decoding'])
-u_statistic_13, p_value_13 = mannwhitneyu(score_exps['uniform delay state\n&\nbiased decoding'], score_exps['uniform delay state\n&\nuniform decoding'])
 
 t_statistic_01, p_value_t_01 = ttest_ind(score_exps['biased delay state\n&\nbiased decoding'], score_exps['uniform delay state\n&\nbiased decoding'])
 t_statistic_23, p_value_t_23 = ttest_ind(score_exps['biased delay state\n&\nuniform decoding'], score_exps['uniform delay state\n&\nuniform decoding'])
-t_statistic_02, p_value_t_02 = ttest_ind(score_exps['biased delay state\n&\nbiased decoding'], score_exps['biased delay state\n&\nuniform decoding'])
-t_statistic_13, p_value_t_13 = ttest_ind(score_exps['uniform delay state\n&\nbiased decoding'], score_exps['uniform delay state\n&\nuniform decoding'])
 
 print(p_value_01, p_value_23)
-print(p_value_02, p_value_13)
 print(p_value_t_01, p_value_t_23)
-print(p_value_t_02, p_value_t_13)
 
 plt.show()
