@@ -53,7 +53,7 @@ def color_mse(input_color,f,prior_sig,batch_size=5000):
 
 
 ################# Calculate color mse of adapted/unadapted model with input drawn from different piror distribution. Uncomment this to run the code will run all models.
-'''
+# '''
 sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
 model_names = [str(s) for s in sigmas]
 
@@ -72,8 +72,10 @@ for prior_sig in sigmas:
         adapted_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
         unadapted_file = os.path.join(unadapted_model_dir_parent, model_dir, sub_dir)
 
-        adapted_mse = color_mse('random', f=adapted_file, prior_sig=prior_sig)
-        unadapted_mse = color_mse('random', f=unadapted_file, prior_sig=prior_sig)
+        # adapted_mse = color_mse('random', f=adapted_file, prior_sig=prior_sig)
+        # unadapted_mse = color_mse('random', f=unadapted_file, prior_sig=prior_sig)
+        adapted_mse = color_mse('common', f=adapted_file, prior_sig=prior_sig)
+        unadapted_mse = color_mse('common', f=unadapted_file, prior_sig=prior_sig)
 
         error_adapted_sig.append(adapted_mse)
         error_unadapted_sig.append(unadapted_mse)

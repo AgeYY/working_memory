@@ -105,23 +105,13 @@ sigma_s = 3.0 / 360 * 2 * np.pi
 file_handle = '3'
 fig_s_3, ax_s_3, fig_n_3, ax_n_3 = plot_prior(sigma_s, file_handle)
 
-sigma_s = 10.0 / 360 * 2 * np.pi
-file_handle = '10'
-fig_s_10, ax_s_10, fig_n_10, ax_n_10 = plot_prior(sigma_s, file_handle)
-
-sigma_s = 25.0 / 360 * 2 * np.pi
-file_handle = '25'
-fig_s_10, ax_s_10, fig_n_10, ax_n_10 = plot_prior(sigma_s, file_handle)
-file_handle = '25_flat'
-fig_s_10, ax_s_10, fig_n_10, ax_n_10 = plot_prior(sigma_s, file_handle, figsize=(5, 3))
+sigma_s = 12.5 / 360 * 2 * np.pi
+file_handle = '12.5'
+plot_prior(sigma_s, file_handle)
 
 sigma_s = 90.0 / 360 * 2 * np.pi
 file_handle = '90'
 fig_s_90, ax_s_90, fig_n_90, ax_n_90 = plot_prior(sigma_s, file_handle)
-
-sigma_s = 20.0 / 360 * 2 * np.pi
-file_handle = '20'
-fig_s_20, ax_s_20, fig_n_20, ax_n_20 = plot_prior(sigma_s, file_handle)
 
 ########### Double prior distribution
 #

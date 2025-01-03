@@ -30,7 +30,7 @@ exp_error_all = []
 mean_bias_all = []
 prod_int = 800 # duration of the delay
 input_color = 40 # the input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
-batch_size = 5000
+batch_size = 500
 delta = 2 # d color / d phi = ( (color + delta) - (color - delta) ) / ( phi(color + delta) - phi(color - delta) )
 #prior_sig = 90.0 # width of the piror
 sigma_rec = None; sigma_x = None # set the noise to be default (training value)

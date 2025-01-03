@@ -41,7 +41,7 @@ out_dir = './figs/fig_collect/decode_plane_' + file_label + '.pdf'
 out_path = './figs/fig_data/decode_vel_plane' + file_label + '.json'
 
 hidden_size = 256
-prod_intervals = 100
+prod_intervals = 800
 n_colors = 20
 batch_size = n_colors # batch size for exact ring initial, which is only used for hidden0_ring
 pca_degree = np.linspace(0, 360, n_colors, endpoint=False)

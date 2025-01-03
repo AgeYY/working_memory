@@ -25,7 +25,7 @@ except:
     gen_data = True
 
 noise_on = True
-prod_int_short = 200
+prod_int_short = 100
 prod_int_long = 1000
 batch_size = 1000
 sigma_rec = None; sigma_x = None # set the noise to be default (training value)
@@ -74,11 +74,13 @@ def plot_error_dist(error_df, legend=['Short', 'Long'], ylim=[0, 7e-3], with_lab
     ax.grid(False)
     ax.set_xticks([-180, 0, 180])
     ax.set_xticklabels(['-180', '0', '180'])
-    ax.set_yticks([0, ylim[1]])
     ax.tick_params(direction='in')
     
     ax.set_xlim([-180, 180])
-    ax.set_ylim(ylim)
+
+    if ylim is not None:
+        ax.set_yticks([0, ylim[1]])
+        ax.set_ylim(ylim)
 
     ax.legend([ax.lines[1], ax.lines[0]], legend, loc='upper right', frameon=False, handlelength=1.5)
 
@@ -86,7 +88,7 @@ def plot_error_dist(error_df, legend=['Short', 'Long'], ylim=[0, 7e-3], with_lab
 
     return fig, ax
 
-fig, ax = plot_error_dist(error_df, ylim=[0, 20e-3], legend=['0.2s', '1.0s'])
+fig, ax = plot_error_dist(error_df, ylim=None, legend=['0.1s', '1.0s'])
 ax.set_xlabel('Response value - Stimulus', fontsize=fs)
 ax.set_ylabel('Density', fontsize=fs)
 fig.savefig('./figs/fig_collect/gaussian_rnn.pdf', format='pdf')

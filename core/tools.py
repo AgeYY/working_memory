@@ -218,10 +218,9 @@ def mean_se(x, y, epsilon = 1e-5, sd=False, remove_outlier=False, m=3.5):
         sub_list = y[np.abs(x - uq) < epsilon]
 
         if remove_outlier:
-            sub_list = reject_outliers(sub_list, m = m)
+            sub_list = removeOutliers(sub_list)
 
         mean_y.append(sub_list.mean())
-        #mean_y.append(np.median(sub_list))
         if sd:
             se_y.append(sub_list.std())
         else:

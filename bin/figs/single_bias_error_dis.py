@@ -65,10 +65,10 @@ for i in range(n_model):
     mse_color_biased_model = []
     for input_color in input_color_range:
         print('Biased Model {m}, color {d}'.format(m=i,d=input_color))
-        mse_sub = color_mse(input_color, f=file,prior_sig=17.5, sigma_rec=sigma_rec, sigma_x=sigma_x)
+        mse_sub = color_mse(input_color, f=file,prior_sig=12.5, sigma_rec=sigma_rec, sigma_x=sigma_x)
         mse_color_biased_model.append(mse_sub)
     mse_color_biased.append(mse_color_biased_model)
-with open('../bin/figs/fig_data/mse_color_17.5.txt','wb') as fp:
+with open('../bin/figs/fig_data/mse_color_12.5.txt','wb') as fp:
     pickle.dump(mse_color_biased,fp)
 
 # Uniform prior
@@ -94,7 +94,7 @@ with open('../bin/figs/fig_data/mse_color_90.0.txt','wb') as fp:
 
 ################# Plot the figure
 # Load data
-with open('../bin/figs/fig_data/mse_color_17.5.txt', 'rb') as fp:
+with open('../bin/figs/fig_data/mse_color_12.5.txt', 'rb') as fp:
     mse_color_biased=np.array(pickle.load(fp))
 with open('../bin/figs/fig_data/mse_color_90.0.txt', 'rb') as fp:
     mse_color_uniform=np.array(pickle.load(fp))

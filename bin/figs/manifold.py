@@ -35,7 +35,7 @@ gen_data = True
 
 prod_intervals=800 # set the delay time to 800 ms for ploring the trajectory
 pca_degree = np.arange(0, 360, 20) # Plot the trajectories of these colors
-alpha_3d = 1; alpha_proj = 0.2;
+alpha_3d = 1; alpha_proj = 0.1;
 data_out_dir = './figs/fig_data/manifold.json'
 proj_z_value={'stim1': -8, 'interval': -7, 'go_cue': -4, 'response': -4, 'all': -12}
 sigma_rec, sigma_x = 0, 0

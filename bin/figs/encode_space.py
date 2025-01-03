@@ -21,7 +21,7 @@ try:
     out_dir = sys.argv[5]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_12.5/color_reproduction_delay_unit/'
     sub_dir = '/model_0/noise_delta'
     out_dir = './figs/fig_collect/angle_occupation'
 

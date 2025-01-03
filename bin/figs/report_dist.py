@@ -19,7 +19,7 @@ try:
     sub_dir = sys.argv[3]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model_local/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
     sub_dir = '/noise_delta'
 
 try:
@@ -32,10 +32,10 @@ except:
 
 binwidth = 3 # binwidth for hist plot
 n_bins = 360 // binwidth
-prod_intervals=100 # set the delay time to 800 ms for ploring the trajectory
+prod_intervals=1000
 pca_degree = np.arange(0, 360, 5) # Plot the trajectories of these colors
 common_color = [40, 130, 220, 310]
-batch_size = 3000
+batch_size = 1000
 out_path = './figs/fig_data/report_dist.csv'
 sigma_rec = None
 fs = 12
