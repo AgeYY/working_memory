@@ -13,15 +13,18 @@ from core.data_plot.manifold_ploter import Manifold_ploter as MPloter
 from core.agent import Agent, Agent_group
 import sys
 
+# Attempt to parse command-line arguments for model directory, rule name, and sub-directory.
 try:
     model_dir = sys.argv[1]
     rule_name = sys.argv[2]
     sub_dir = sys.argv[3]
+# Default values if command-line arguments are not provided.
 except:
     rule_name = 'color_reproduction_delay_unit'
     model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
     sub_dir = '/noise_delta'
 
+# Determine whether to generate new data or use existing data.
 try:
     if sys.argv[4] == 'Y': # set false so it will not generate data
         gen_data = True
@@ -30,12 +33,14 @@ try:
 except:
     gen_data = False
 
-binwidth = 3 # binwidth for hist plot
-n_bins = 360 // binwidth
-prod_intervals=1000
-pca_degree = np.arange(0, 360, 5) # Plot the trajectories of these colors
-common_color = [40, 130, 220, 310]
-batch_size = 1000
+
+# Configuration parameters
+binwidth = 3  # Bin width for histogram plots.
+n_bins = 360 // binwidth  # Total number of bins for plotting.
+prod_intervals=1000  # Delay interval for data generation (1,000 ms).
+pca_degree = np.arange(0, 360, 5)   # Degrees of colors to plot trajectories.
+common_color = [40, 130, 220, 310]  # Common colors used in the training prior.
+batch_size = 1000  # Number of trials.
 out_path = './figs/fig_data/report_dist.csv'
 sigma_rec = None
 fs = 12
@@ -44,7 +49,7 @@ def gen_report_target(out_path):
     group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
     group.do_batch_exp(prod_intervals=prod_intervals, sigma_rec=sigma_rec, batch_size=batch_size)
 
-    dire = group.group_behaviour.copy()
+    dire = group.group_behaviour.copy()  # Group behavior data.
     dire_df = pd.DataFrame(dire)
     dire_df.to_csv(out_path)
 
@@ -54,6 +59,8 @@ if gen_data:
 
 sns.set_theme(style='ticks')
 
+
+# Function to plot the distribution of output colors
 def plot_report_dist(report_dist, add_common_color=False):
     '''
     report_dist (array [float]): report colors
@@ -93,6 +100,8 @@ def plot_report_dist(report_dist, add_common_color=False):
 if __name__ == "__main__":
     ### plot RNN result
     dire_df = pd.read_csv(out_path)
+
+    # Plot the report distribution with common color indicators.
     fig, ax = plot_report_dist(dire_df['report_color'], add_common_color=True)
     ax.set_xlabel('Response value', fontsize=fs)
     fig.savefig('./figs/fig_collect/report_rnn.pdf', format='pdf')

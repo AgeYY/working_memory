@@ -11,6 +11,7 @@ import sys
 out_path_unbias = './figs/fig_data/unbias_common.csv'
 out_path_bias = './figs/fig_data/bias_common.csv'
 
+# Attempt to parse command-line arguments for model configuration, or use default values.
 try:
     model_dir = sys.argv[1]
     rule_name = sys.argv[2]
@@ -20,6 +21,7 @@ except:
     model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
     sub_dir = '/noise_delta'
 
+# Determine whether to generate data; default is False.
 try:
     if sys.argv[4] == 'Y': # set false so it will not generate data
         gen_data = True
@@ -30,17 +32,20 @@ except:
 
 gen_data = True
 
-batch_size = 1000 # how many test trials
-prod_intervals = np.array([100, 1000])
-common_color = [40, 130, 220, 310] # high prob values
-reg_up = 15; reg_low = -15; # regression range from common_color - 15 to common_color + 15
-sigma_rec=None; sigma_x=None
+
+# Parameters
+batch_size = 1000  # Number of trials
+prod_intervals = np.array([100, 1000])  # Delay intervals
+common_color = [40, 130, 220, 310]  # Common colors with high probabilities in the training prior.
+reg_up = 15; reg_low = -15  # Regression range for target colors around common colors.
+sigma_rec=None; sigma_x=None  # Noise
 bin_size = 2
 
 # calculate the mean and se
 def mean_se(x, y, epsilon = 1e-5):
     '''
-    calculate the mean and standard error of the mean
+    Calculate the mean and standard error for y values grouped by unique x values.
+
     x (array [float]): [0,0,0, 1,1,1, 2,2,2, ...] or [2.5,2.5,2.5, 2.6,2.6,2.6, ...]
     y (array [float]): the value y[i] is the y value of x[i]. Note that there are many repetitions in the x. This function will calculate the mean and se in every x value
     epsilon: the difference of x smaller than epsilon is considered as same value
@@ -64,13 +69,24 @@ def mean_se(x, y, epsilon = 1e-5):
     return target, mean_y, se_y
 
 def output_data(sub_dir, out_path):
+    """
+       Generate and save bias data for target and reported colors around common colors.
+
+       Parameters:
+           sub_dir (str): Sub-directory for models.
+           out_path (str): Path to save the output data.
+       """
     group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
     print(model_dir, sub_dir)
+    # Generate data for short delay intervals
     group.do_batch_exp(prod_intervals=prod_intervals[0], sigma_rec=sigma_rec, sigma_x=sigma_x, batch_size=batch_size, bin_size=bin_size)
     dire_s = group.group_behaviour.copy()
+
+    # Generate data for long delay intervals
     group.do_batch_exp(prod_intervals=prod_intervals[1], sigma_rec=sigma_rec, batch_size=batch_size, bin_size=bin_size, sigma_x=sigma_x)
     dire_l = group.group_behaviour.copy()
 
+    # Calculate difference around common colors
     target_common_s, bias_s = clib.bias_around_common(dire_s['report_color'], dire_s['target_color'], common_color)
     target_common_l, bias_l = clib.bias_around_common(dire_l['report_color'], dire_l['target_color'], common_color)
 
@@ -92,6 +108,7 @@ if gen_data:
 #### Linear regression
 import statsmodels.api as sm
 
+# Perform linear regression for a given range
 def gen_reg_line(target, bias):
     '''
     linear fitting for target within a range
@@ -106,12 +123,12 @@ def gen_reg_line(target, bias):
       p_value (array): pvalue
     '''
     X = target.to_numpy()
-    X_idx = (X < reg_up) * (X > reg_low) # we only regression the middle region of the data
+    X_idx = (X < reg_up) * (X > reg_low)  # Select data within the regression range.
     X = X[X_idx].reshape((-1, 1))
     X2 = sm.add_constant(X)
     y = bias.to_numpy()[X_idx]
 
-    est = sm.OLS(y, X2)
+    est = sm.OLS(y, X2)  # Ordinary Least Squares regression.
     est2 = est.fit()
 
     # data for regression line
@@ -127,6 +144,7 @@ sns.set_style("ticks")
 
 def plot_bias(target_common_s, bias_s, target_common_l, bias_l):
     '''
+    Plot bias data with regression lines and error bands.
     all inputs should be pd series
     '''
     fig = plt.figure(figsize=(3, 3))
@@ -136,7 +154,7 @@ def plot_bias(target_common_s, bias_s, target_common_l, bias_l):
     x_s_regs, y_s_regs, p_value_s = gen_reg_line(target_common_s, bias_s)
     x_l_regs, y_l_regs, p_value_l = gen_reg_line(target_common_l, bias_l)
 
-    ### band
+    ### Error band
     target, mean_error, se_error = mean_se(target_common_s, bias_s)
     ax.fill_between(target, mean_error - se_error, mean_error + se_error, alpha=0.4)
 
@@ -158,7 +176,8 @@ def plot_bias(target_common_s, bias_s, target_common_l, bias_l):
 
     return fig, ax
 
-#### read the data
+#### Read the data, plot and save results for biased and unbiased RNNs
+
 ## bias_rnn, i.e. models trained with biased distribution
 dire_df = pd.read_csv(out_path_bias)
 
