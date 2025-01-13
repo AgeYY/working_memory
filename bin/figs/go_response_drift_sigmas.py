@@ -21,15 +21,15 @@ plt.rc('axes', linewidth=2)
 rule_name = 'color_reproduction_delay_unit'
 sub_dir = 'noise_delta/'
 model_names = ['3.0','10.0','12.5','15.0','17.5','20.0', '22.5','25.0','27.5', '30.0','90.0']
-sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
+sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]  # Environmental prior
 
-# paramters to get appropriate neural states
-prod_intervals = 100
-sigma_rec, sigma_x = 0, 0
-n_colors = 20
-pca_degree = np.linspace(0, 360, n_colors, endpoint=False)
+# Paramters to get appropriate neural states
+prod_intervals = 100  # Delay duration
+sigma_rec, sigma_x = 0, 0  # Noise, set to zero
+n_colors = 20  # Number of colors
+pca_degree = np.linspace(0, 360, n_colors, endpoint=False)  # Degree of colors
 
-bin_edges = bins=list(np.arange(0, 361, 10))
+bin_edges = bins=list(np.arange(0, 361, 10)) # 10-degree bins for histograms
 
 # parameters about sampling grids on the PC1-PC2 plane
 xlim = [-30, 30]
@@ -54,6 +54,7 @@ for prior_sig in sigmas:
     entropy_start_sig = []
     entropy_end_sig = []
 
+    # Loop over 50 RNNs for each sigma
     for i in range(50):
         model_dir = 'model_'+str(i)+'/'  # example RNN
         model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
@@ -62,24 +63,28 @@ for prior_sig in sigmas:
         sub = Agent(model_file, rule_name)
         sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x) # generate initial states
 
+        #### Sample grid points in the PCA plane
         hhelper = Hidden0_helper(hidden_size=256)
         #cords_pca, cords_origin = hhelper.mesh_pca_plane(sub, period_name=period_name, xlim=xlim, ylim=ylim, edge_batch_size=edge_batch_size) # get the
         cords_pca, cords_origin = hhelper.delay_ring(sub, period_name=period_name)
 
+        #### Evolve neural states through the specified period
         se = State_Evolver()
         se.read_rnn_file(model_file, rule_name)
         se.set_trial_para(prod_interval=prod_intervals)
         states = se.evolve(cords_origin, evolve_period=evolve_period)
         # print(states.shape)
+
+        #### Convert neural states to angles
         angle_s = state_to_angle(states[0])
         if evolve_period[1] == 'go_cue':
             angle_e = state_to_angle(states[-1])
         elif evolve_period[1] == 'response':
             angle_e = state_to_angle(np.mean(states, axis=0))
 
+        #### Compute histograms and entropy for start and end states
         hist_s, _ = np.histogram(angle_s, bins=bin_edges, density=True)
         hist_e, _ = np.histogram(angle_e, bins=bin_edges, density=True)
-
         entropy_s = entropy(hist_s)
         entropy_e = entropy(hist_e)
 

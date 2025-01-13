@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 def obtain_x_y_lim(cords_pca, padding_factor=0.1):
     '''
-    obtain the x and y limit which is slightly larger than the range of the data
+    Obtain the x and y limit which is slightly larger than the range of the data
     input:
         cords_pca: np.array. shape: (n, 2)
         padding_factor: float. The padding factor of the x and y range
@@ -58,6 +58,9 @@ def scatter_points_within_box(cords_pca, xlim, ylim, fig=None, ax=None, spine_th
     return fig, ax
 
 def origin_to_pca(feamap, n_components=2):
+    '''
+    Apply PCA transformation to neural states.
+    '''
     pca = PCA(n_components=n_components)
     feamap_pca = pca.fit_transform(feamap)
     return feamap_pca
@@ -95,22 +98,22 @@ def prepare_and_evolve(period_name, evolve_period, fig=None, ax=None):
     return fig, ax
 
 #################### Hyperparameters
-# file names
-prior_sig = 3.0
+# Model parameters
+prior_sig = 3.0  # Width of the environmental prior distribution
 rule_name = 'color_reproduction_delay_unit'
 adapted_model_dir_parent = "../core/model_short_res_40/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
-model_dir = 'model_5/'  # example RNN
+model_dir = 'model_5/'  # Example RNN
 sub_dir = 'noise_delta/'
 model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
 
 # paramters to get appropriate neural states
-prod_intervals = 100
-sigma_rec, sigma_x = 0, 0
+prod_intervals = 100  # Delay duration  for experiment
+sigma_rec, sigma_x = 0, 0  # Noise
 n_colors = 20
-pca_degree = np.linspace(0, 360, n_colors, endpoint=False)
-n_ring_point = 20
+pca_degree = np.linspace(0, 360, n_colors, endpoint=False)  # Color distribution on ring
+n_ring_point = 20  # Number of points on delay or response plane
 
-#################### Main ####################
+#################### Main
 period_name = 'interval'
 evolve_period = ['go_cue', 'go_cue']
 fig, ax = prepare_and_evolve(period_name, evolve_period)

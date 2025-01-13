@@ -16,6 +16,7 @@ from matplotlib.lines import Line2D
 mpl.rcParams['xtick.labelsize'] = 15
 mpl.rcParams['ytick.labelsize'] = 15
 
+# Function to remove outliers from a dataset, based on interquartile range
 def removeOutliers(a, outlierConstant=1):
     upper_quartile = np.percentile(a, 75)
     lower_quartile = np.percentile(a, 25)
@@ -24,7 +25,8 @@ def removeOutliers(a, outlierConstant=1):
     return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]
 
 
-# Generate a batch of input colors
+# Generate a batch of input colors sampled from different distributions
+# 'common', 'uncommon', 'random', or a fixed custom color
 def gen_input_colors(input_color,prior_sig=17.5,batch_size=5000):
     if input_color == 'common':
         input_color_set = 40 * np.ones(batch_size)
@@ -39,25 +41,27 @@ def gen_input_colors(input_color,prior_sig=17.5,batch_size=5000):
         input_color_set =input_color * np.ones(batch_size)  # any customized color
     return input_color_set
 
-
+# Define noise levels used in the experiment
 Noises = ['0.10', '0.12', '0.14', '0.16', '0.18', '0.20', '0.22', '0.24', '0.26', '0.28', '0.30', '0.32']
 Noise_values = [0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.32]
 
-######## Calculation
+######## Uncomment the following section to calculate experimental memory error
 '''
 exp_error_all = []
-prod_int = 800 # duration of the delay
-batch_size = 5000
-prior_sig = 17.5  # width of the piror
-sigma_rec = None; sigma_x = None # set the noise to be default (training value)
+prod_int = 800  # duration of the delay
+batch_size = 5000  # Number of trials for each RNN
+prior_sig = 17.5  # Width of the piror
+sigma_rec = None; sigma_x = None # Set the noise to be default (training value)
 
 rule_name = 'color_reproduction_delay_unit'
 sub_dir = 'noise_delta/'
 
+# Iterate through noise levels
 for i,noise in enumerate(Noises):
     model_dir_parent = "../core/model_noise/noise_"+noise+"/model_"+str(prior_sig)+"/color_reproduction_delay_unit/"
     exp_error_n= []
 
+    # Iterate through 50 RNNs for each noise level
     for m in range(50):
         print(noise, m)
         model_dir = 'model_{}/'.format(m)  # example RNN
@@ -65,15 +69,16 @@ for i,noise in enumerate(Noises):
         sub = Agent(f, rule_name)  # this is the outside agent creating data
 
 
-        ### experimental prediction
+        # Generate random input colors sampled from the environmental prior
         input_colors = gen_input_colors('random')
+        
+        # Compute experimental memory error by comparing target and reported colors
         sub.do_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, sigma_x=sigma_x, ring_centers=input_colors)
-
         color_error = Color_error()
         color_error.add_data(sub.behaviour['report_color'], sub.behaviour['target_color'])
-        sub_error = color_error.calculate_error()  # circular substraction
-        sqe_exp = sub_error ** 2  # first method
-        sqe_exp = removeOutliers(sqe_exp)
+        sub_error = color_error.calculate_error()  # Xircular substraction
+        sqe_exp = sub_error ** 2  
+        sqe_exp = removeOutliers(sqe_exp)  # Remove outlier errors
         mse_exp = np.mean(sqe_exp)
         print('exp: ', math.sqrt(mse_exp),end='\n\n')
 
@@ -85,11 +90,13 @@ with open('../bin/figs/fig_data/all_memory_error_noise.txt','wb') as fp:
 # '''
 
 
-# Compare theoritical and experimental results (side-by-side boxes)
+# Compare theoretical and experimental results (side-by-side boxes)
 # '''
+# Load previously calculated memory errors for visualization
 with open('../bin/figs/fig_data/all_memory_error_noise.txt', 'rb') as fp:
     exp_error_all = np.array(pickle.load(fp))[:-1]
 
+# Compute mean and standard deviation of memory errors across RNNs
 exp_error_mean = np.mean(np.sqrt(exp_error_all), axis=1)
 exp_error_std = np.std(np.sqrt(exp_error_all), axis=1)
 

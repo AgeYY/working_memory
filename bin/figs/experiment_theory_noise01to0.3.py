@@ -22,26 +22,29 @@ plt.rcParams['axes.spines.right'] = False # Show or hide the bottom spine
 plt.rcParams['axes.linewidth'] = 2 # Sets the spine thickness
 
 ####################
+# Noise levels used in experiments
 Noises = ['0.10', '0.12', '0.14', '0.16', '0.18', '0.20', '0.22', '0.24', '0.26', '0.28', '0.30', '0.32']
 Noise_values = [0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.32]
 
-######## Calculation
-'''
+######## Calculation (uncomment when calculating the results)
+# '''
 dispersion_all = []
 density_all = []
 regular_all = []
 exp_error_all = []
 mean_bias_all = []
-prod_int = 800 # duration of the delay
-input_color = 40 # the input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
-batch_size = 5000
-delta = 2 # d color / d phi = ( (color + delta) - (color - delta) ) / ( phi(color + delta) - phi(color - delta) )
-#prior_sig = 90.0 # width of the piror
-sigma_rec = None; sigma_x = None # set the noise to be default (training value)
 
+# Experimental parameters
+prod_int = 800  # Duration of the delay
+input_color = 40  # The input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
+batch_size = 5000  # Number of trials
+delta = 2  # d color / d phi = ( (color + delta) - (color - delta) ) / ( phi(color + delta) - phi(color - delta) )
+# prior_sig = 90.0  # width of the piror
+sigma_rec = None; sigma_x = None  # Set the noise to be default (training value)
 rule_name = 'color_reproduction_delay_unit'
 sub_dir = 'noise_delta/'
 
+# Loop through noise levels
 for i,noise in enumerate(Noises):
     model_dir_parent = "../core/model_noise/noise_"+noise+"/model_17.5/color_reproduction_delay_unit/"
     dispersion_n = []
@@ -50,6 +53,7 @@ for i,noise in enumerate(Noises):
     exp_error_n= []
     mean_bias_n = []
 
+    # Loop through 50 RNNs for each noise level
     for m in range(50):
         model_dir = 'model_{}/'.format(m)  # example RNN
         f = os.path.join(model_dir_parent, model_dir, sub_dir)
@@ -58,7 +62,7 @@ for i,noise in enumerate(Noises):
         sa = State_analyzer()
         sa.read_rnn_file(f,rule_name)  # I strongly recommand using read_rnn_file instead of creating a agent outside (read_rnn_agent). Agent used within a state_analyzer should not be used outside.
 
-        ### obtain angle phi_i at the end of delay in repeated trials
+        ### Obtain angle phi_i at the end of delay in repeated trials
         input_color_list = np.ones(batch_size) * input_color  # repeatly run common color trials
         sub.do_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, sigma_x=sigma_x, ring_centers=input_color_list)
         end_of_delay_state = sub.state[sub.epochs['interval'][1]]  # shape is [batch_size, hidden_size]
@@ -74,7 +78,7 @@ for i,noise in enumerate(Noises):
         dispersion = np.mean(sqe_phi)
         print('dynamic dispersion: ', dispersion)
 
-        ### color density
+        ### Color density (squared reciprocal angular occupancy)
         phi = sa.angle_color(np.array([input_color - delta, input_color + delta]), input_var='color')
         color_error = Color_error()
         color_error.add_data([phi[1]], [phi[0]])
@@ -84,7 +88,7 @@ for i,noise in enumerate(Noises):
         density = (dc_dphi) ** 2
         print('color density: ', density)
 
-        ### regularization term
+        ### Calculate regularization term (mean bias correction)
         phii_mean = np.mean(phii)
         phic = sa.angle_color(np.array([input_color]), input_var='color')[0]
 
@@ -98,13 +102,12 @@ for i,noise in enumerate(Noises):
         # regular_term = density * ((phii_mean - phic) ** 2) # method 2
         print('regularization term: ', regular_term)
 
-        ### theoretical prediction
+        ### theoretical prediction of memory errors
         # print('theory: ', math.sqrt(dispersion * density) + regular_term) # method 1
         print('theory: ', math.sqrt(dispersion * density + regular_term)) # method 2
 
-        ### experimental prediction
+        ### Experimental memory errors
         sub.do_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, sigma_x=sigma_x, ring_centers=input_color_list)
-
         color_error = Color_error()
         color_error.add_data(sub.behaviour['report_color'], sub.behaviour['target_color'])
         sub_error = color_error.calculate_error()  # circular substraction
@@ -118,7 +121,6 @@ for i,noise in enumerate(Noises):
         regular_n.append(regular_term)
         exp_error_n.append(mse_exp)
         mean_bias_n.append(mean_bias)
-
 
     print('mean_bias_all:', mean_bias_all)
     print('regular all:', regular_all)
@@ -195,6 +197,7 @@ plt.show()
 # '''
 
 # Plot regularization term (mean bias correction)
+'''
 with open('./figs/fig_data/regularization_40_noise.txt','rb') as fp:
     regular_all = np.array(pickle.load(fp))
 
@@ -214,8 +217,9 @@ ax.spines['right'].set_visible(False)
 fig.tight_layout()
 plt.savefig('./figs/fig_collect/mean_bias_noise.svg',format='svg',bbox_inches='tight')
 plt.show()
+# '''
 
-# Compare theoritical and experimental results (side-by-side boxes)
+# Compare theoretical and experimental results (side-by-side boxes)
 # '''
 with open('./figs/fig_data/color_density_40_noise.txt','rb') as fp:
     density_all = np.array(pickle.load(fp))

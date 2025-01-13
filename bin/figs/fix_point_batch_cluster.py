@@ -19,6 +19,7 @@ import seaborn as sns
 import argparse
 from mpi4py import MPI
 
+# Initialize MPI for parallel processing
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
@@ -41,6 +42,7 @@ parser.add_argument('--gen_data', default=False, action='store_true',
 
 arg = parser.parse_args()
 
+# Assign parsed arguments to variables
 model_dir = arg.model_dir
 rule_name = arg.rule_name
 sub_dir = arg.sub_dir
@@ -51,46 +53,49 @@ gen_data = arg.gen_data
 out_path = './figs/fig_data/att_dis_' + file_label + '.json'
 fig_out_path = './figs/fig_collect/att_dis_' + file_label + '.svg'
 
-batch_size = 300
-n_epochs = 20000
-lr=1
-prod_interval_search = 0
-speed_thre = None # speed lower than this we consider it as fixpoints, slow points otherwise
+# Parameters for fixed-point finding
+batch_size = 300  # Number of trials
+n_epochs = 20000  # Maximum number of epochs for training.
+lr=1  # Learning rate.
+prod_interval_search = 0  # Delay duration for searching fixed points.
+speed_thre = None  # Speed threshold to classify fixed points.
 milestones = [6000, 12000, 18000]
 alpha=0.7
-initial_type='delay_ring'
-sigma_init = 0 # Specify the noise adding on initial searching points
-common_colors = [40, 130, 220, 310]
+initial_type='delay_ring'   # Type of initial points for fixed-point search.
+sigma_init = 0
+common_colors = [40, 130, 220, 310]  # Common colors
 
 if gen_data:
-    group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
-
+    group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)  # Load a group of RNN agents.
     n_models = len(group.group)
-    fixpoint_colors = []
-    fixpoint_att = []
+    fixpoint_colors = []  # Store colors of fixed points.
+    fixpoint_att = []  # Store attractor status of fixed points.
 
     for i in range(rank, n_models, size):
         sub = group.group[i]
         model_dir = sub.model_dir
+
+        # Find fixed points for the current model
         fixpoint_output = ultimate_find_fixpoints(model_dir, rule_name, batch_size=batch_size, n_epochs=n_epochs, lr=lr, speed_thre=speed_thre, milestones=milestones, prod_intervals=prod_interval_search, initial_type=initial_type, sigma_init=sigma_init, sub=sub) # find the angle of fixpoints
-        # decode the angles to color
+
+        # Decode fixed points to color space
         rnn_de = RNN_decoder()
         rnn_de.read_rnn_agent(sub)
         fixpoints = fixpoint_output['fixpoints']
         att = fixpoint_output['att_status']
 
-        ## by thresholding the radius of fixpoints, we only consider fixpoints on the ring
-        pca_degree = np.linspace(0, 360, 100, endpoint=False) # Plot the trajectories of these colors
+        # Filter fixed points based on radius (only consider points on the ring)
+        pca_degree = np.linspace(0, 360, 100, endpoint=False)  # Input color range.
         sa = State_analyzer(prod_intervals=800, pca_degree=pca_degree, sigma_rec=0, sigma_x=0)
         sa.read_rnn_agent(sub)
-        fixpoints_proj = sa.projection(fixpoints, fit_pca=True)
+        fixpoints_proj = sa.projection(fixpoints, fit_pca=True)  # Project fixed points into PCA space.
         norm = np.linalg.norm(fixpoints_proj, axis=1)
         norm_mean = np.mean(norm)
-        fixpoints = fixpoints[norm > norm_mean / 2]
+        fixpoints = fixpoints[norm > norm_mean / 2]   # Keep fixed points with sufficient radius.
         att = att[norm > norm_mean / 2]
 
         fixpoint_att.extend(att)
-        colors = rnn_de.decode(fixpoints)
+        colors = rnn_de.decode(fixpoints)  # Decode fixed points into color degrees.
         fixpoint_colors.extend(colors)
 
     fixpoint_att = np.array(fixpoint_att).flatten().astype(bool)
