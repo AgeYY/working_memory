@@ -27,6 +27,7 @@ mpl.rcParams['axes.spines.top'] = False
 mpl.rcParams['axes.spines.right'] = False
 mpl.rcParams['legend.frameon'] = False
 # Directories
+metric_name = 'cv'
 rule_name = 'color_reproduction_delay_unit'
 sub_dir = 'noise_delta/'
 model_names = ['3.0','10.0','12.5','15.0','17.5','20.0', '22.5','25.0','27.5', '30.0','90.0']
@@ -49,9 +50,9 @@ edge_batch_size = 50 # number of points in each direction
 period_name = 'response' # can be 'interval'
 evolve_period = ['response', 'response'] # can be 'go_cue'
 
-def AO_entropy(model_dir_root, sigma_s, period_name, evolve_period, t='mean'):
+def AO_metric(model_dir_root, sigma_s, period_name, evolve_period, t='mean', metric_name='entropy'):
     model_dir_parent = model_dir_root + "/model_" + str(sigma_s) + "/color_reproduction_delay_unit/"
-    entropy_list = []
+    metric_list = []
     for filename in os.listdir(model_dir_parent):
         f = os.path.join(model_dir_parent, filename)
         ##### Get mesh points in the response PC1-PC2 plane
@@ -75,23 +76,25 @@ def AO_entropy(model_dir_root, sigma_s, period_name, evolve_period, t='mean'):
         dist = hist / np.sum(hist)
         dist_uniform = np.ones(dist.shape) / len(dist)
         # entropy_list.append(entropy(dist) / entropy(dist_uniform))
-        entropy_list.append(entropy(dist))
-    return entropy_list
+        if metric_name == 'entropy':
+            metric_list.append(entropy(dist))
+        elif metric_name == 'cv':
+            metric_list.append(np.std(dist) / np.mean(dist))
+    return metric_list
 
 
 ######### Compare AO entropy of original model and short-response model (sigma_s = 3.0)
 # '''
-entropy_ori = AO_entropy('../core/model', sigma_s=3.0, period_name=period_name, evolve_period=evolve_period, t='mean')
-entropy_short = AO_entropy('../core/model_short_res_40', sigma_s=3.0, period_name=period_name, evolve_period=evolve_period, t='mean')
+entropy_ori = AO_metric('../core/model', sigma_s=3.0, period_name=period_name, evolve_period=evolve_period, t='mean', metric_name=metric_name)
+entropy_short = AO_metric('../core/model_short_res_40', sigma_s=3.0, period_name=period_name, evolve_period=evolve_period, t='mean', metric_name=metric_name)
 
 score_exps = {'Long': entropy_ori,'Short': entropy_short}
 layer_order = {'Long': 0,'Short': 1}
 fig, ax = plt.subplots(figsize=(3, 3))
 fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_color='tab:red', jitter_s=30, show_outlier=False)
-ax.set_ylabel('Entropy')
+ax.set_ylabel(metric_name + ' of \n the representative neural states')
 fig.tight_layout()
-fig.savefig('../bin/figs/fig_collect/long_short_response_entropy_'+period_name+'.svg',format='svg',bbox_inches='tight')
-# ax.set_yscale('log')
+fig.savefig('../bin/figs/fig_collect/long_short_response_'+metric_name+'_'+period_name+'.svg',format='svg',bbox_inches='tight')
 plt.show()
 
 # '''

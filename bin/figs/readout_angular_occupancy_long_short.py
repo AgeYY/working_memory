@@ -35,9 +35,10 @@ mpl.rcParams['legend.frameon'] = False
 
 # os.environ["CUDA_VISIABLE_DEVICES"] = "1"
 
+metric_name = 'cv'
 prod_intervals = 800
 n_colors = 500
-batch_size = 1000 # batch size for exact ring initial
+batch_size = 36 # batch size for exact ring initial
 pca_degree = np.linspace(0, 360, n_colors, endpoint=False) # Plot the trajectories of these colors
 sigma_rec=0; sigma_x = 0
 common_color = [40, 130, 220, 310]
@@ -82,9 +83,9 @@ def diff_xy(x, y):
 
 
 
-def AO_entropy(model_dir_root, sigma_s):
+def AO_metric(model_dir_root, sigma_s, metric_name='entropy'):
     model_dir_parent = model_dir_root+'/model_' + str(sigma_s) + '/color_reproduction_delay_unit/'
-    entropy_list = []
+    metric_list = []
 
     sa = State_analyzer()
     for filename in os.listdir(model_dir_parent):
@@ -97,60 +98,63 @@ def AO_entropy(model_dir_root, sigma_s):
         x_delta = report_color_ring
         y_delta = deg
         x_delta, dydx_delta = diff_xy(x_delta, y_delta)
-        entropy_list.append(entropy(dydx_delta))
+        if metric_name == 'entropy':
+            metric_list.append(entropy(dydx_delta))
+        elif metric_name == 'cv':
+            metric_list.append(np.std(dydx_delta) / np.mean(dydx_delta))
 
-    return entropy_list
+    return metric_list
 
 
 ######### Calculte AO entropy for all sigma_s (original model)
 '''
 model_dir_root = '../core/model'
-entropy_all = []
+metric_all = []
 for sigma_s in sigma_s_list:
-    entropy_sig = AO_entropy(model_dir_root,sigma_s)
-    entropy_all.append(entropy_sig)
+    metric_sig = AO_metric(model_dir_root,sigma_s, metric_name=metric_name)
+    metric_all.append(metric_sig)
 
-with open('../bin/figs/fig_data/AO_entropy_'+period_name+'_sigmas.txt', 'wb') as fp:
-    pickle.dump(entropy_all, fp)
-# '''
+with open('../bin/figs/fig_data/AO_'+metric_name+'_'+period_name+'_sigmas.txt', 'wb') as fp:
+    pickle.dump(metric_all, fp)
+'''
 
 # Load data and plot the figure
 '''
-with open('../bin/figs/fig_data/AO_entropy_'+period_name+'_sigmas.txt', 'rb') as fp:
-    entropy_all = np.array(pickle.load(fp))
+with open('../bin/figs/fig_data/AO_'+metric_name+'_'+period_name+'_sigmas.txt', 'rb') as fp:
+    metric_all = np.array(pickle.load(fp))
 
-entropy_mean = list(np.mean(entropy_all,axis=1))
-entropy_ste = list(np.std(entropy_all, axis=1) / math.sqrt(entropy_all.shape[1]))
-entropy_std = list(np.std(entropy_all, axis=1))
+metric_mean = list(np.mean(metric_all,axis=1))
+metric_ste = list(np.std(metric_all, axis=1) / math.sqrt(metric_all.shape[1]))
+metric_std = list(np.std(metric_all, axis=1))
 
 fig = plt.figure(figsize=(4,3))
 bax = brokenaxes(xlims=((0, 35), (85, 95)), hspace=.05)
 
-bax.errorbar(x=sigma_s_list, y=entropy_mean,yerr=entropy_ste,color='orangered',fmt='.-',linewidth=1.5, markersize=10,alpha=1)
-bax.set_ylabel('Entropy',fontsize=13)
+bax.errorbar(x=sigma_s_list, y=metric_mean,yerr=metric_ste,color='orangered',fmt='.-',linewidth=1.5, markersize=10,alpha=1)
+bax.set_ylabel(metric_name,fontsize=13)
 bax.set_xlabel(r'$\sigma_s$',fontsize=15)
 bax.axs[0].set_xticks([10,20,30])
 bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
 bax.axs[1].set_xticks([90])
 bax.axs[1].set_xticklabels(['90.0'])
-plt.savefig('../bin/figs/fig_collect/AO_entropy_'+period_name+'_sigmas.svg',format='svg',bbox_inches='tight')
+plt.savefig('../bin/figs/fig_collect/AO_'+metric_name+'_'+period_name+'_sigmas.svg',format='svg',bbox_inches='tight')
 plt.show()
-# '''
+'''
 
 ######### Compare AO entropy of original model and short-response model (sigma_s = 3.0)
 # '''
-entropy_ori = AO_entropy('../core/model', sigma_s=3.0)
-entropy_short = AO_entropy('../core/model_short_res_40', sigma_s=3.0)
+metric_ori = AO_metric('../core/model', sigma_s=3.0, metric_name=metric_name)
+metric_short = AO_metric('../core/model_short_res_40', sigma_s=3.0, metric_name=metric_name)
 
-score_exps = {'Long': entropy_ori,'Short': entropy_short}
+score_exps = {'Long': metric_ori,'Short': metric_short}
 layer_order = {'Long': 0,'Short': 1}
 print(score_exps)
 
 fig, ax = plt.subplots(figsize=(3, 3))
 fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_s=20, show_outlier=False)
-ax.set_ylabel('Entropy of \n the normalized angular occupancy')
+ax.set_ylabel(metric_name + ' of \n the normalized angular occupancy')
 fig.tight_layout()
-fig.savefig('../bin/figs/fig_collect/long_short_AO_entropy_'+period_name+'.svg',format='svg',bbox_inches='tight')
+fig.savefig('../bin/figs/fig_collect/long_short_AO_'+metric_name+'_'+period_name+'.svg',format='svg',bbox_inches='tight')
 plt.show()
 
 # '''
