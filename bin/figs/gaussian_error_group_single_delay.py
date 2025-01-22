@@ -8,12 +8,12 @@ from core.agent import Agent, Agent_group
 import sys
 
 rule_name = 'color_reproduction_delay_unit'
-model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
+model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
 sub_dir = '/noise_delta'
 
-prod_int_short = 1000
+prod_int_short = 0
 batch_size = 1000
-sigma_rec = None; sigma_x = None # set the noise to be default (training value)
+sigma_rec = 0; sigma_x = 0 # set the noise to be default (training value)
 
 #### Generate data
 group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
@@ -37,7 +37,8 @@ diff_color_clean = np.array([removeOutliers(row) for row in diff_color])
 
 error_color = []
 for i in range(len(diff_color_clean)):
-    error_color.append(np.std(diff_color_clean[i]))
+    error = np.sqrt(np.mean(diff_color_clean[i]**2))
+    error_color.append(error)
 
 error_color_mean = np.mean(error_color)
 error_color_std = np.std(error_color)
