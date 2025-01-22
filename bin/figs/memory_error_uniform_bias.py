@@ -16,49 +16,77 @@ import pandas as pd
 import seaborn as sns
 from core.ploter import plot_layer_boxplot_helper
 
+
+# Function to remove outliers from data
 def removeOutliers(a, outlierConstant=1.5):
+    """
+    Remove outliers from an array using the interquartile range (IQR) method.
+
+    Parameters:
+        a (array-like): Input array from which outliers will be removed.
+        outlierConstant (float): Multiplier for the IQR to define outlier thresholds.
+
+    Returns:
+        array-like: Filtered array with outliers removed.
+    """
     upper_quartile = np.percentile(a, 75)
     lower_quartile = np.percentile(a, 25)
     IQR = (upper_quartile - lower_quartile) * outlierConstant # 1.5
     quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
     return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))[0]]
 
+
+# Function to calculate memory error (mean squared error) for a prior distribution
 def color_mse(input_color,f,prior_sig,batch_size=5000):
+    """
+       Calculate the memory error (MSE) between input and output colors for a specific input distribution.
+
+       Parameters:
+           input_color (str or float): Type of input color ('common', 'uncommon', 'random') or specific value.
+           f (str): File path to the RNN model.
+           prior_sig (float): Standard deviation of the prior distribution.
+           batch_size (int): Number of trials to generate.
+
+       Returns:
+           float: Mean squared error of the memory error.
+    """
 
     if input_color == 'common':
-        input_color_set = 40 * np.ones(batch_size)
+        input_color_set = 40 * np.ones(batch_size)  # Common color 40
     elif input_color == 'uncommon':
-        input_color_set = 85 * np.ones(batch_size)
+        input_color_set = 85 * np.ones(batch_size)  # Uncommon color 85
     elif input_color == 'random':
-        color_sampling = Color_input()
+        color_sampling = Color_input()   # Generate random input colors.
         color_sampling.add_samples()
         color_sampling.prob(method='vonmises', bias_centers=[40, 130, 220, 310], sig=prior_sig)
         input_color_set = color_sampling.out_color_degree(batch_size=batch_size)
     else:
-        input_color_set = input_color * np.ones(batch_size)
+        input_color_set = input_color * np.ones(batch_size)  # A customized input color
 
     prod_int = 800 # duration of the delay
     rule_name = 'color_reproduction_delay_unit'
-    sub = Agent(f, rule_name)
-    sigma_rec = None;sigma_x = None  # set the noise to be default (training value)
+    sub = Agent(f, rule_name)  # Initialize the RNN model.
+    sigma_rec = None;sigma_x = None  # Use default noise values.
 
+    # Perform the experiment
     sub.do_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, sigma_x=sigma_x, ring_centers=input_color_set)
 
+    # Calculate memory error (MSE)
     color_error = Color_error()
     color_error.add_data(sub.behaviour['report_color'], sub.behaviour['target_color'])
-    sub_error = color_error.calculate_error() # circular substraction
-    sub_error_sq = removeOutliers(sub_error ** 2)
+    sub_error = color_error.calculate_error()  # Circular substraction
+    sub_error_sq = removeOutliers(sub_error ** 2)  # Remove outliers before calculating MSE.
     mse_sub = np.mean(sub_error_sq)
     return mse_sub
 
 
-################# Calculate color mse of adapted/unadapted model with input drawn from different piror distribution. Uncomment this to run the code will run all models.
-'''
-sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
+# Calculate memory errors for Biased and Uniform RNNs across various prior distributions
+# '''
+sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]  # Prior distribution sigmas.
 model_names = [str(s) for s in sigmas]
 
-error_adapted = []
-error_unadapted = []
+error_adapted = []  # Errors for Biased (adapted) RNNs.
+error_unadapted = []   # Errors for Uniform (unadapted) RNNs.
 
 sub_dir = 'noise_delta/'
 unadapted_model_dir_parent = "../core/model/model_90.0/color_reproduction_delay_unit/"
@@ -66,14 +94,17 @@ for prior_sig in sigmas:
     adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
     error_adapted_sig = []
     error_unadapted_sig = []
-    for j in range(50):
+    for j in range(50): # Iterate over 50 RNNs
         print(prior_sig,j)
         model_dir = 'model_{}/'.format(j)  # example RNN
         adapted_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
         unadapted_file = os.path.join(unadapted_model_dir_parent, model_dir, sub_dir)
 
-        adapted_mse = color_mse('random', f=adapted_file, prior_sig=prior_sig)
-        unadapted_mse = color_mse('random', f=unadapted_file, prior_sig=prior_sig)
+        # Calculate memory errors for common input colors
+        # adapted_mse = color_mse('random', f=adapted_file, prior_sig=prior_sig)
+        # unadapted_mse = color_mse('random', f=unadapted_file, prior_sig=prior_sig)
+        adapted_mse = color_mse('common', f=adapted_file, prior_sig=prior_sig)
+        unadapted_mse = color_mse('common', f=unadapted_file, prior_sig=prior_sig)
 
         error_adapted_sig.append(adapted_mse)
         error_unadapted_sig.append(unadapted_mse)
@@ -88,6 +119,7 @@ with open('../bin/figs/fig_data/mse_unadapted.txt','wb') as fp:
 
 ################# Plot the figure for example sigma
 # '''
+# Load calculated memory errors for plotting
 with open('../bin/figs/fig_data/mse_adapted.txt', 'rb') as fp:
     error_adapted = np.array(pickle.load(fp))
 with open('../bin/figs/fig_data/mse_unadapted.txt', 'rb') as fp:
@@ -96,7 +128,7 @@ with open('../bin/figs/fig_data/mse_unadapted.txt', 'rb') as fp:
 e_adapted = list(np.sqrt(error_adapted[2])) # sigma = 12.5 (third one)
 e_unadapted = list(np.sqrt(error_unadapted[2])) # sigma = 12.5
 
-# U-test
+# # Perform statistical test (Mann-Whitney U-test)
 U1, pvalue = mannwhitneyu(e_adapted, e_unadapted, method="exact")
 print(U1,pvalue)
 
@@ -107,7 +139,7 @@ print(U1,pvalue)
 formatted_pvalues = f'p={pvalue:.2e}'
 
 #################### Plot data
-# remove outlier, we don't plot outliers
+# Remove outliers for plotting
 e_unadapted, e_adapted = removeOutliers(np.array(e_unadapted)), removeOutliers(np.array(e_adapted))
 
 data = {'Uniform RNN': e_unadapted, 'Biased RNN': e_adapted}

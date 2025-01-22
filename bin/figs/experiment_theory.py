@@ -18,27 +18,30 @@ plt.rc('ytick', labelsize=15)
 plt.rc('xtick', labelsize=15)
 plt.rc('axes', linewidth=2)
 
+
 model_names = ['3.0','10.0','12.5','15.0','17.5','20.0', '22.5','25.0','27.5', '30.0','90.0']
 sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
 
-######## Calculation
-'''
+######## Calculation (uncomment this part to generate new data)
+# '''
 dispersion_all = []
 density_all = []
 regular_all = []
 exp_error_all = []
 mean_bias_all = []
-prod_int = 800 # duration of the delay
-input_color = 40 # the input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
-batch_size = 5000
-delta = 2 # d color / d phi = ( (color + delta) - (color - delta) ) / ( phi(color + delta) - phi(color - delta) )
-#prior_sig = 90.0 # width of the piror
-sigma_rec = None; sigma_x = None # set the noise to be default (training value)
 
+# Simulation parameters
+prod_int = 800  # Duration of the delay
+input_color = 40  # The input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
+batch_size = 500  # Number of trials
+delta = 2  # d color / d phi = ( (color + delta) - (color - delta) ) / ( phi(color + delta) - phi(color - delta) )
+# prior_sig = 90.0  # width of the piror
+sigma_rec = None; sigma_x = None  # Set the noise to be default (training value)
 rule_name = 'color_reproduction_delay_unit'
 # model_dir = 'model_1/' # example RNN
 sub_dir = 'noise_delta/'
 
+# Iterate over all sigmas to compute metrics for RNN
 for i,prior_sig in enumerate(sigmas):
     model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
     dispersion_sig = []
@@ -47,11 +50,13 @@ for i,prior_sig in enumerate(sigmas):
     exp_error_sig = []
     mean_bias_sig = []
 
+    # Iterate over 50 RNNs for each sigma
     for m in range(50):
         print(prior_sig,m)
         model_dir = 'model_{}/'.format(m)  # example RNN
         f = os.path.join(model_dir_parent, model_dir, sub_dir)
         sub = Agent(f, rule_name)  # this is the outside agent creating data
+
         ### obtain angle of common color phi_c
         # sa = State_analyzer(decoder_type='RNN_decoder')
         sa = State_analyzer()
@@ -135,10 +140,10 @@ with open('../bin/figs/fig_data/mean_bias_{}.txt'.format(input_color),'wb') as f
     pickle.dump(mean_bias_all,fp)
 with open('../bin/figs/fig_data/experimental_error_{}.txt'.format(input_color),'wb') as fp:
     pickle.dump(exp_error_all,fp)
-'''
+# '''
 
 ######### Plot dispersion
-'''
+# '''
 with open('../bin/figs/fig_data/dynamic_dispersion_40.txt','rb') as fp:
     dispersion_all = pickle.load(fp)
 

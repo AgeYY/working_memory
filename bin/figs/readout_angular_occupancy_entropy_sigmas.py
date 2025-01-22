@@ -24,16 +24,16 @@ plt.rcParams['ytick.labelsize'] = 15 # Sets the y-axis tick label size
 
 # os.environ["CUDA_VISIABLE_DEVICES"] = "1"
 
-prod_intervals = 800
-n_colors = 500
-batch_size = 36 # batch size for exact ring initial
+prod_intervals = 800  # Duration of delay interval
+n_colors = 500  # Number of colors used for RNN inputs
+batch_size = 36  # batch size for exact ring initial
 pca_degree = np.linspace(0, 360, n_colors, endpoint=False) # Plot the trajectories of these colors
-sigma_rec=0; sigma_x = 0
+sigma_rec=0; sigma_x = 0  # Noise
 common_color = [40, 130, 220, 310]
-density_bin_size = 8
-sigma_s_list = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
+density_bin_size = 8  # Bin size for density computation
+sigma_s_list = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]  # List of prior sigma_s
 period_name = 'response'
-rule_name = 'color_reproduction_delay_unit' # rule name is fixed to color_reproduction_delay_unit. Actually this repo can also train another type of RNN with slightly different input format, but in this paper we only use color_reproduction_delay_unit
+rule_name = 'color_reproduction_delay_unit'  # rule name is fixed to color_reproduction_delay_unit. Actually this repo can also train another type of RNN with slightly different input format, but in this paper we only use color_reproduction_delay_unit
 
 
 def gen_type_RNN(sub,batch_size=300):
@@ -56,6 +56,16 @@ def gen_type_RNN(sub,batch_size=300):
     return report_color_ring, deg
 
 def diff_xy(x, y):
+    """
+    Compute angular occupancy by calculating derivatives of the angle.
+    Parameters:
+        x: Color values.
+        y: Neural axis angles.
+
+    Returns:
+        x_order: Sorted color values.
+        dydx_order: Sorted angular occupancy values.
+    """
     cptor = Circular_operator(0, 360)
     diff_y = cptor.diff(y[1:], y[:-1])
     diff_x = cptor.diff(x[1:], x[:-1])
@@ -88,6 +98,7 @@ for sigma_s in sigma_s_list:
         y_delta = deg
         x_delta, dydx_delta = diff_xy(x_delta, y_delta)
 
+        # Compute entropy of angular occupancy
         entropy_sig.append(entropy(dydx_delta))
 
     entropy_all.append(entropy_sig)

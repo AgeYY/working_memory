@@ -26,9 +26,14 @@ sigmas_id = find_indices(sigmas_all, sigmas)
 with open('../bin/figs/fig_data/dynamic_dispersion_40.txt','rb') as fp:
     dispersion_all = pickle.load(fp)
 
+# Select and process dispersion data for the target sigmas
 dispersion_all = np.array(dispersion_all)
-dispersion_dict = {model_names[i]: np.sqrt(dispersion_all[sigmas_id[i]]) for i, sigs in enumerate(sigmas)} # select target sigmas
+dispersion_dict = {model_names[i]: np.sqrt(dispersion_all[sigmas_id[i]]) for i, sigs in enumerate(sigmas)}  # select target sigmas
+
+# Uncomment the following line to remove outliers from the data
 # for key in dispersion_dict: dispersion_dict[key] = removeOutliers(dispersion_dict[key]) # remove outlier
+
+# Statistical tests to compare dispersion between biased and uniform RNNs
 print(stats.ttest_ind(dispersion_dict['Biased RNN'], dispersion_dict['Uniform RNN']))
 print(stats.mannwhitneyu(dispersion_dict['Biased RNN'], dispersion_dict['Uniform RNN']))
 

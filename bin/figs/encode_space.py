@@ -14,6 +14,7 @@ import seaborn as sns
 from core.tools import find_nearest, mean_se
 
 ##################################################
+# Handle command-line arguments or set defaults
 try:
     model_dir = sys.argv[1]
     rule_name = sys.argv[2]
@@ -21,7 +22,7 @@ try:
     out_dir = sys.argv[5]
 except:
     rule_name = 'color_reproduction_delay_unit'
-    model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
+    model_dir = '../core/model/model_12.5/color_reproduction_delay_unit/'
     sub_dir = '/model_0/noise_delta'
     out_dir = './figs/fig_collect/angle_occupation'
 
@@ -32,21 +33,24 @@ try:
         gen_data = False
 except:
     gen_data = False
+
 ##################################################
+# Check whether to generate data.
 gen_data = True
 
-hidden_size = 256
-prod_intervals = 800
-n_colors = 500
-batch_size = n_colors # batch size for exact ring initial
+# Parameters
+hidden_size = 256  # Size of the RNN hidden layer.
+prod_intervals = 800  # Delay duration for experiments.
+n_colors = 500  # Number of colors for sampling the delay plane.
+batch_size = n_colors  # Batch size for exact ring initial
 pca_degree = np.linspace(0, 360, n_colors, endpoint=False) # Plot the trajectories of these colors
-sigma_rec=0; sigma_x = 0
-common_color = [40, 130, 220, 310]
-density_bin_size = 8
+sigma_rec=0; sigma_x = 0  # Noise
+common_color = [40, 130, 220, 310]  # Common colors
+density_bin_size = 8  # Bin size for computing density.
 
 
 def gen_type_RNN(sub):
-    ''' generate data for one type of RNN'''
+    ''' Generate decoded colors and angular positions for one type of RNN '''
     ########## Points on the ring
     sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x)
 
@@ -64,8 +68,9 @@ def gen_type_RNN(sub):
     ##### decode states from high dimesional space
     rnn_de = RNN_decoder()
     rnn_de.read_rnn_agent(sub)
-    
     report_color_ring = rnn_de.decode(hidden0_ring)
+
+    # Calculate angular positions on the PCA plane
     deg_pca = np.arctan2(hidden0_ring_pca[:, 1], hidden0_ring_pca[:, 0]) # calculate the angle of hidden0_ring_pca
     deg_pca = np.mod(deg_pca, 2*np.pi) / 2.0 / np.pi * 360.0
     return report_color_ring, deg_pca
@@ -79,15 +84,18 @@ if gen_data:
 
 data_df = pd.read_csv(out_dir + '.csv')
 
-
+# Function to compute derivatives (angular occupation)
 def diff_xy(x, y):
+    """
+    Compute the derivative for angular occupation analysis.
+    """
     cptor = Circular_operator(0, 360)
-    diff_y = cptor.diff(y[1:], y[:-1])
-    diff_x = cptor.diff(x[1:], x[:-1])
+    diff_y = cptor.diff(y[1:], y[:-1])  # Differences in angular positions.
+    diff_x = cptor.diff(x[1:], x[:-1])  # Differences in decoded colors.
 
     dydx = abs(diff_y / diff_x) # the derivertive might be all negtive due to the difference of defination of rotational direction in deg_pca and report_color
 
-    # reorder
+    # Reorder values by x for plotting
     order = np.argsort(x[1:])
     x_order = x[1:][order]
     dydx_order = dydx[order]
@@ -97,6 +105,7 @@ def diff_xy(x, y):
 sns.set_theme()
 sns.set_style("ticks")
 
+# Extract decoded colors and angular positions
 x_delta = data_df['report_color_ring_delta'].to_numpy()
 y_delta = data_df['deg_pca_delta'].to_numpy()
 
@@ -104,6 +113,7 @@ y_delta = data_df['deg_pca_delta'].to_numpy()
 fig = plt.figure(figsize=(3, 3))
 ax = fig.add_axes([0.25, 0.2, 0.6, 0.6])
 
+# Color mapping for the points
 deg_color = Degree_color()
 colors = deg_color.out_color(x_delta, fmat='RGBA')
 

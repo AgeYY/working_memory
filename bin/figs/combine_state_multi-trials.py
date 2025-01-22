@@ -34,6 +34,7 @@ parser.add_argument('--gen_data', default=True, type=bool,
 
 arg = parser.parse_args()
 
+# Assign parsed arguments to variables
 model_dir = arg.model_dir
 rule_name = arg.rule_name
 sub_dir = arg.sub_dir
@@ -41,22 +42,27 @@ prod_intervals = arg.prod_interval
 file_label = arg.file_label
 gen_data = arg.gen_data
 
-out_fig_path = './figs/fig_collect/combine_' + file_label + '.png'
+out_fig_path = './figs/fig_collect/combine_' + file_label + '.pdf'
 out_path = './figs/fig_data/combine_' + file_label + '.json'
 
-input_color = 40 # the input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
-delta = 5
-
-hidden_size = 256
-n_colors = 200
-batch_size = n_colors # batch size for exact ring initial
-sigma_rec=0; sigma_x = 0
+# Parameters for visualization
+input_color = 40  # The input will be fixed to 40 degree (common color) or 85 degree (uncommon color)
+delta = 5  # Angular range for boundary visualization.
+hidden_size = 256  # Size of the RNN hidden layer.
+n_colors = 200  # Number of colors for decoding.
+batch_size = n_colors  # Batch size for exact ring initial
+sigma_rec=0; sigma_x = 0  # Noise
 xlim=[-30, 30]; ylim=[-30, 30]; edge_batch_size=150;
 traj_id = int(n_colors / 2.0)
 spacing_time = 3 # every two dots in the trajectory would be 20 ms * spacing_time
 
 def gen_data_func(n_trails=100):
-    ########## Color boundary
+    """
+    Generate and save data for visualizing the joint effect of dynamic dispersion
+    and angular occupancy in PCA space.
+    """
+
+    ########## Calculate color boundary on the PCA plane
     sa = State_analyzer()
     sa.read_rnn_file(model_dir + sub_dir, rule_name)
     phi = sa.angle_color(np.array([input_color - delta, input_color + delta]), input_var='color')
@@ -69,23 +75,23 @@ def gen_data_func(n_trails=100):
     # print('traj_id',traj_id)
     sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x)
     
-    ##### fit data to find the pca plane
+    ##### Fit PCA to the end of delay epoch activity
     n_components = 2
     pca = PCA(n_components=n_components)
     pca.fit(sub.state[sub.epochs['interval'][1]])
 
-    ##### state in the hidimensional space and pca plane
+    ##### States in the hidimensional space and pca plane for multiple trials
     hidden0_ring_pca_list = []
     hidden_size = sub.state.shape[-1]
     hhelper = Hidden0_helper(hidden_size=hidden_size)
     for _ in range(n_trails):
         sub_2 = Agent(model_dir + sub_dir, rule_name)
-        sub_2.do_exp(prod_intervals=prod_intervals, ring_centers=[input_color], sigma_rec=0.5, sigma_x=sigma_x)
-        hidden0_ring = sub_2.state[sub_2.epochs['interval'][0]:sub_2.epochs['interval'][1], 0, :].reshape((-1, 256)) # pick the traj_id trial. Cut the first 100ms
+        sub_2.do_exp(prod_intervals=prod_intervals, ring_centers=[input_color], sigma_rec=None, sigma_x=None)
+        hidden0_ring = sub_2.state[sub_2.epochs['interval'][1]:sub_2.epochs['interval'][1] + 1, 0, :].reshape((-1, 256)) # pick the traj_id trial. Cut the first 100ms
         hidden0_ring_pca = pca.transform(hidden0_ring)
         hidden0_ring_pca_list.append(hidden0_ring_pca)
 
-    ##### decode states from high dimesional space
+    ##### Decode states from high dimesional space
     rnn_de = RNN_decoder()
     rnn_de.read_rnn_agent(sub_2)
 
@@ -112,8 +118,9 @@ def gen_data_func(n_trails=100):
 
 if gen_data:
     gen_data_func()
-########### plot figures
 
+
+########### plot figures
 data_df = tools.load_dic(out_path)
 hidden0_grid_pca = np.array(data_df['hidden0_grid_pca'])
 hidden0_ring_pca_list = np.array(data_df['hidden0_ring_pca_list'])
@@ -165,6 +172,6 @@ ax.tick_params(
 )
 
 #fig.savefig('./figs/fig_collect/combine.pdf', format='pdf')
-fig.savefig(out_fig_path, format='png', dpi=500)
+fig.savefig(out_fig_path, format='pdf', dpi=500)
 
 plt.show()

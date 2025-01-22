@@ -7,6 +7,9 @@ from core.color_manager import Degree_color
 from core.agent import Agent, Agent_group
 import sys
 
+
+# Try to get the model directory, rule name, and sub-directory from command-line arguments.
+# If not provided, use default values.
 try:
     model_dir = sys.argv[1]
     rule_name = sys.argv[2]
@@ -16,6 +19,7 @@ except:
     model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
     sub_dir = '/noise_delta'
 
+# Determine whether to generate data based on a command-line argument. Default is True.
 try:
     if sys.argv[4] == 'Y': # set false so it will not generate data
         gen_data = True
@@ -24,11 +28,13 @@ try:
 except:
     gen_data = True
 
-noise_on = True
-prod_int_short = 200
-prod_int_long = 1000
-batch_size = 1000
-sigma_rec = None; sigma_x = 0 # set the noise to be default (training value)
+
+# Define parameters and data output paths.
+noise_on = True  # Flag to indicate if noise is enabled.
+prod_int_short = 100  # Short interval.
+prod_int_long = 1000  # Long interval.
+batch_size = 1000  # Num of trials
+sigma_rec = None; sigma_x = None # set the noise to be default (training value)
 out_path_short = './figs/fig_data/fig1_short_tri_noise.csv'
 out_path_long = './figs/fig_data/fig1_long_tri_noise.csv'
 
@@ -36,8 +42,8 @@ fs = 10 # front size
 
 #### Output data
 def output_data(prod_intervals, out_path):
-    group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
-    group.do_batch_exp(prod_intervals=prod_intervals, sigma_rec=sigma_rec, batch_size=batch_size, sigma_x=sigma_x)
+    group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)  # Initialize a group of agents (50 RNNs).
+    group.do_batch_exp(prod_intervals=prod_intervals, sigma_rec=sigma_rec, batch_size=batch_size, sigma_x=sigma_x)  # Perform batch experiments (1000 trials).
 
     dire_df = pd.DataFrame(group.group_behaviour)
     dire_df.to_csv(out_path)
@@ -74,11 +80,13 @@ def plot_error_dist(error_df, legend=['Short', 'Long'], ylim=[0, 7e-3], with_lab
     ax.grid(False)
     ax.set_xticks([-180, 0, 180])
     ax.set_xticklabels(['-180', '0', '180'])
-    ax.set_yticks([0, ylim[1]])
     ax.tick_params(direction='in')
     
     ax.set_xlim([-180, 180])
-    ax.set_ylim(ylim)
+
+    if ylim is not None:
+        ax.set_yticks([0, ylim[1]])
+        ax.set_ylim(ylim)
 
     ax.legend([ax.lines[1], ax.lines[0]], legend, loc='upper right', frameon=False, handlelength=1.5)
 
@@ -86,8 +94,8 @@ def plot_error_dist(error_df, legend=['Short', 'Long'], ylim=[0, 7e-3], with_lab
 
     return fig, ax
 
-fig, ax = plot_error_dist(error_df, ylim=[0, 20e-3], legend=['0.2s', '1.0s'])
+fig, ax = plot_error_dist(error_df, ylim=None, legend=['0.1s', '1.0s'])
 ax.set_xlabel('Response value - Stimulus', fontsize=fs)
 ax.set_ylabel('Density', fontsize=fs)
 fig.savefig('./figs/fig_collect/gaussian_rnn.pdf', format='pdf')
-#plt.show()
+plt.show()

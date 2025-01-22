@@ -10,18 +10,16 @@ from core.color_manager import Degree_color
 
 #################### Hyperparameters
 # file names
-prior_sig = 3.0
+prior_sig = 3.0  # Sigma value for the environmental prior
 rule_name = 'color_reproduction_delay_unit'
 adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
-
 sub_dir = 'noise_delta/'
 
-
 # paramters to get appropriate neural states
-prod_intervals = 100
-sigma_rec, sigma_x = 0, 0
-n_colors = 20
-pca_degree = np.linspace(0, 360, n_colors, endpoint=False)
+prod_intervals = 100  # Delay duration
+sigma_rec, sigma_x = 0, 0  # Noise
+n_colors = 20  # Number of colors
+pca_degree = np.linspace(0, 360, n_colors, endpoint=False)  # Color angles sampled in a circular space
 
 # parameters about sampling grids on the PC1-PC2 plane
 xlim = [-30, 30]
@@ -34,16 +32,17 @@ period_name = 'response' # can be response, of interval PC1-PC2 plane
 model_dir = 'model_0/'  # example RNN
 model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
 
+# Generate neural states
 sub = Agent(model_file, rule_name)
 sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x) # generate initial states
 
+# Sample points
 hhelper = Hidden0_helper(hidden_size=256)
 cords_pca, cords_origin = hhelper.mesh_pca_plane(sub, period_name=period_name, xlim=xlim, ylim=ylim, edge_batch_size=edge_batch_size) # get the
 
-##### Decode grid mesh points
+# Decode corresponding colors
 rd = RNN_decoder()
 rd.read_rnn_file(model_file, rule_name)
-
 decode_color = rd.decode(cords_origin, decoding_plane='response')
 
 

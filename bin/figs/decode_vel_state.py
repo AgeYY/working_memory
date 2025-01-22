@@ -17,6 +17,7 @@ from matplotlib.colors import ListedColormap
 
 parser = argparse.ArgumentParser()
 
+# Add arguments with default values
 parser.add_argument('--model_dir', default="../core/model/model_90.0/color_reproduction_delay_unit/", type=str,
                     help='models')
 parser.add_argument('--rule_name', default='color_reproduction_delay_unit', type=str,
@@ -40,41 +41,47 @@ print('model_dir: ', model_dir)
 out_dir = './figs/fig_collect/decode_plane_' + file_label + '.pdf'
 out_path = './figs/fig_data/decode_vel_plane' + file_label + '.json'
 
-hidden_size = 256
-prod_intervals = 100
-n_colors = 20
-batch_size = n_colors # batch size for exact ring initial, which is only used for hidden0_ring
-pca_degree = np.linspace(0, 360, n_colors, endpoint=False)
-sigma_rec=0; sigma_x = 0
+# Parameters for PCA and decoding visualization
+hidden_size = 256  # Size of the RNN hidden layer.
+prod_intervals = 800  # Delay duration for experiments.
+n_colors = 20   # Number of input colors for decoding visualization.
+batch_size = n_colors  # Batch size for exacting ring initial, which is only used for hidden0_ring
+pca_degree = np.linspace(0, 360, n_colors, endpoint=False)  # Input color range (0 to 360 degrees).
+sigma_rec=0; sigma_x = 0  # Noise
 edge_len = 30
 stream_density, stream_maxlength = 0.7, 5
 arrowsize = 1.5
 xlim=[-edge_len, edge_len]; ylim=xlim; edge_batch_size=50; # edge_batch_size = 70
 
+
 def gen_data_func():
+    """
+    Generate decoding data for RNN states projected into PCA space.
+    """
+    # Load the RNN model
     sub = Agent(model_dir + sub_dir, rule_name)
+    # Run experiments with specified input colors
     sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x)
     
-    # fit data to find the pca plane
+    # Fit PCA plane by the neural activity during the delay epoch
     n_components = 2
     pca = PCA(n_components=n_components)
     pca.fit(sub.state[sub.epochs['interval'][1]])
 
-    # state in the hidimensional space and pca plane
+    # States in the hidimensional space and pca space
     hidden_size = sub.state.shape[-1]
     hhelper = Hidden0_helper(hidden_size=hidden_size)
 
-    # decode states from high dimesional space
+    # Decode states from high dimesional space
     rnn_de = RNN_decoder()
     rnn_de.read_rnn_agent(sub)
-
     hidden0_grid_pca, hidden0_grid = hhelper.mesh_pca_plane(sub, xlim, ylim, edge_batch_size)
     print(xlim, ylim, edge_batch_size, hidden0_grid)
 
-    # color of the grid
+    # Color of the grid
     report_color_grid = rnn_de.decode(hidden0_grid)
 
-    # velocity of the grid
+    # Velocity of the grid
     hidden0_vel, hidden0_vel_pca = hidden0_grid, hidden0_grid_pca
     sa = State_analyzer(prod_intervals=1000)
     sa.read_rnn_agent(sub)
@@ -95,8 +102,10 @@ def gen_data_func():
 
 if gen_data:
     gen_data_func()
-########### plot figures
 
+
+########### Plot Figures ###########
+# Load the decoding data
 data_df = tools.load_dic(out_path)
 hidden0_grid_pca = np.array(data_df['hidden0_grid_pca'])
 report_color_grid = np.array(data_df['report_color_grid'])
@@ -104,6 +113,7 @@ vel_pca = np.array(data_df['vel_pca'])
 hidden0_vel_pca = np.array(data_df['hidden0_vel_pca'])
 traj_pca = np.array(data_df['traj_pca'])
 
+# Map decoded colors to RGBA values
 deg_color = Degree_color()
 colors_grid = deg_color.out_color(report_color_grid, fmat='RGBA')
 

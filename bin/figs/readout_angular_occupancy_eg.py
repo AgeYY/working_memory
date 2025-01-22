@@ -12,17 +12,17 @@ from core.rnn_decoder import RNN_decoder
 from core.color_error import Circular_operator
 from core.tools import find_nearest, mean_se
 from sklearn.decomposition import PCA
-
-
 # os.environ["CUDA_VISIABLE_DEVICES"] = "1"
 
-prod_intervals = 800
-n_colors = 500
-batch_size = 1000 # batch size for exact ring initial
+
+# Set parameters for the experiment
+prod_intervals = 800  # Delay period length
+n_colors = 500  # Number of colors sampled
+batch_size = 1000  # Batch size for exact ring initial
 pca_degree = np.linspace(0, 360, n_colors, endpoint=False) # Plot the trajectories of these colors
-sigma_rec=0; sigma_x = 0
+sigma_rec=0; sigma_x = 0  # Noise
 common_color = [40, 130, 220, 310]
-density_bin_size = 8
+density_bin_size = 8  # Bin size for density calculations
 sigma_s = 3.0
 period_name = 'response'
 
@@ -46,6 +46,15 @@ def gen_type_RNN(sub,batch_size=300):
     return report_color_ring, deg
 
 def diff_xy(x, y):
+    """
+    Calculate the derivative of angular occupation with respect to color.
+    Args:
+        x: Color input values.
+        y: Angular positions of neural states.
+    Returns:
+        x_order: Ordered color inputs.
+        dydx_order: Corresponding derivatives.
+    """
     cptor = Circular_operator(0, 360)
     diff_y = cptor.diff(y[1:], y[:-1])
     diff_x = cptor.diff(x[1:], x[:-1])
@@ -60,10 +69,11 @@ def diff_xy(x, y):
 
 model_dir_parent = '../core/model/model_'+str(sigma_s)+'/color_reproduction_delay_unit/' # one rnn model
 rule_name = 'color_reproduction_delay_unit'
-
 angle_list = []
 x_delta_list, dydx_delta_list = [], []
 sa = State_analyzer()
+
+# Iterate through each model
 for filename in os.listdir(model_dir_parent):
     # if filename == 'model_0': pass
     # else: continue

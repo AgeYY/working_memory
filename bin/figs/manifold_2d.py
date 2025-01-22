@@ -18,6 +18,7 @@ import argparse
 # Instantiate the parser
 parser = argparse.ArgumentParser()
 
+# Add arguments with default values
 parser.add_argument('--model_dir', default="../core/model/model_12.5/color_reproduction_delay_unit/", type=str,
                     help='models')
 parser.add_argument('--rule_name', default='color_reproduction_delay_unit', type=str,
@@ -31,6 +32,7 @@ parser.add_argument('--file_label', default='', type=str,
 
 arg = parser.parse_args()
 
+# Assign parsed arguments to variables
 model_dir = arg.model_dir
 rule_name = arg.rule_name
 sub_dir = arg.sub_dir
@@ -42,21 +44,28 @@ gen_data = True
 out_path = './figs/fig_data/manifold_2d' + file_label + '.json'
 out_fig_path = './figs/fig_collect/' + 'manifold_2d_' + file_label +'_'
 
-hidden_size = 256
-prod_intervals_mplot = prod_intervals # for ploting delay trajectories, not for searching fixpoints
+# Model-specific parameters
+hidden_size = 256  # Size of the hidden layer in the RNN.
+prod_intervals_mplot = prod_intervals  # Duration for plotting delay trajectories.
 alpha=1
-batch_size = 300
+batch_size = 300  # Number of trials
 
+# Load the RNN model
 sub = Agent(model_dir+sub_dir, rule_name)
 
-#################### Plot
 ##### Plot delay trajectories
+# Run experiments to obtain neural trajectories for delay epoch
 sub.do_exp(prod_intervals=prod_intervals_mplot, ring_centers=np.linspace(0, 360, 20, endpoint=False), sigma_rec=0, sigma_x=0) # used to plot backgroud trajectories
+
+# Initialize manifold plotter and load neural activity data
 mplot = MPloter()
 mplot.load_data(sub.state, sub.epochs, sub.behaviour['target_color'])
-#mplot._pca_fit(3, start_time=sub.epochs['stim1'][0] - 1, end_time=sub.epochs['response'][1])
+
+# Fit PCA to the neural activity during the delay epoch
+# mplot._pca_fit(3, start_time=sub.epochs['stim1'][0] - 1, end_time=sub.epochs['response'][1])
 mplot._pca_fit(3, start_time=sub.epochs['interval'][0] - 1, end_time=sub.epochs['interval'][1])
 
+# Function to generate and save 2D manifold visualizations for a given epoch
 def manifold_epoch_name(name):
     #mplot._pca_fit(2, start_time=sub.epochs[name][0], end_time=sub.epochs[name][1])
     fig_2d = plt.figure(figsize=(3, 3))
@@ -66,6 +75,8 @@ def manifold_epoch_name(name):
     fig_2d.savefig(out_fig_path  + name + '.pdf', format='pdf')
 
 print(sub.epochs)
+
+# Generate and save 2D visualizations for specific epochs
 manifold_epoch_name('interval')
 manifold_epoch_name('go_cue')
 manifold_epoch_name('response')
