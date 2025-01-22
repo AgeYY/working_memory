@@ -1,42 +1,44 @@
 import context
 import numpy as np
+import pickle
 import os
+from core.tools import removeOutliers
 from core.manifold.fix_point import Hidden0_helper
 from core.agent import Agent
-from core.rnn_decoder import RNN_decoder
-import hickle as hkl
-#from core.state_evolver import evolve_recurrent_state
 from core.state_evolver import State_Evolver
-from core.tools import state_to_angle, find_indices, removeOutliers
+from core.tools import state_to_angle
 import matplotlib.pyplot as plt
-from scipy.stats import entropy
 from brokenaxes import brokenaxes
 import math
+from core.post_delay_metric_analysis import (
+    compute_metric, setup_plotting_style, 
+    create_broken_axis_plot, process_metric_data
+)
 
-plt.rc('ytick', labelsize=15)
-plt.rc('xtick', labelsize=15)
-plt.rc('axes', linewidth=2)
+# Set up plotting style
+setup_plotting_style()
 
 # Directories
+metric_name = 'cv'  # can be 'entropy' or 'cv' (coefficient of variation)
 rule_name = 'color_reproduction_delay_unit'
 sub_dir = 'noise_delta/'
 model_names = ['3.0','10.0','12.5','15.0','17.5','20.0', '22.5','25.0','27.5', '30.0','90.0']
 sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]  # Environmental prior
 
 # Paramters to get appropriate neural states
-prod_intervals = 100  # Delay duration
+prod_intervals = 800  # Delay duration
 sigma_rec, sigma_x = 0, 0  # Noise, set to zero
 n_colors = 20  # Number of colors
 pca_degree = np.linspace(0, 360, n_colors, endpoint=False)  # Degree of colors
 
-bin_edges = bins=list(np.arange(0, 361, 10)) # 10-degree bins for histograms
+bin_edges = list(np.arange(0, 361, 10)) # 10-degree bins for histograms
 
 # parameters about sampling grids on the PC1-PC2 plane
 xlim = [-30, 30]
 ylim = [-30, 30]
 edge_batch_size = 50 # number of points in each direction
 
-# to study the drift of go period, use
+# # to study the drift of go period, use
 # period_name = 'interval' # can be response, of interval PC1-PC2 plane
 # evolve_period = ['go_cue', 'go_cue']
 
@@ -44,98 +46,96 @@ edge_batch_size = 50 # number of points in each direction
 period_name = 'response' # can be response, of interval PC1-PC2 plane
 evolve_period = ['response', 'response']
 
-######## Entropy calculation
-entropy_start_all = []
-entropy_end_all = []
+# ######## Metric calculation
+# metric_start_all = []
+# metric_end_all = []
 
-for prior_sig in sigmas:
-# file names
-    adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
-    entropy_start_sig = []
-    entropy_end_sig = []
+# for prior_sig in sigmas:
+#     # file names
+#     adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
+#     metric_start_sig = []
+#     metric_end_sig = []
 
-    # Loop over 50 RNNs for each sigma
-    for i in range(50):
-        model_dir = 'model_'+str(i)+'/'  # example RNN
-        model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
+#     # Loop over 50 RNNs for each sigma
+#     for i in range(50):
+#         model_dir = 'model_'+str(i)+'/'  # example RNN
+#         model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
 
-        ##### Get mesh points in the response PC1-PC2 plane
-        sub = Agent(model_file, rule_name)
-        sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x) # generate initial states
+#         ##### Get mesh points in the response PC1-PC2 plane
+#         sub = Agent(model_file, rule_name)
+#         sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x)
 
-        #### Sample grid points in the PCA plane
-        hhelper = Hidden0_helper(hidden_size=256)
-        #cords_pca, cords_origin = hhelper.mesh_pca_plane(sub, period_name=period_name, xlim=xlim, ylim=ylim, edge_batch_size=edge_batch_size) # get the
-        cords_pca, cords_origin = hhelper.delay_ring(sub, period_name=period_name)
+#         #### Sample grid points in the PCA plane
+#         hhelper = Hidden0_helper(hidden_size=256)
+#         cords_pca, cords_origin = hhelper.delay_ring(sub, period_name=period_name)
 
-        #### Evolve neural states through the specified period
-        se = State_Evolver()
-        se.read_rnn_file(model_file, rule_name)
-        se.set_trial_para(prod_interval=prod_intervals)
-        states = se.evolve(cords_origin, evolve_period=evolve_period)
-        # print(states.shape)
+#         #### Evolve neural states through the specified period
+#         se = State_Evolver()
+#         se.read_rnn_file(model_file, rule_name)
+#         se.set_trial_para(prod_interval=prod_intervals)
+#         states = se.evolve(cords_origin, evolve_period=evolve_period)
 
-        #### Convert neural states to angles
-        angle_s = state_to_angle(states[0])
-        if evolve_period[1] == 'go_cue':
-            angle_e = state_to_angle(states[-1])
-        elif evolve_period[1] == 'response':
-            angle_e = state_to_angle(np.mean(states, axis=0))
+#         #### Convert neural states to angles
+#         angle_s = state_to_angle(states[0])
+#         if evolve_period[1] == 'go_cue':
+#             angle_e = state_to_angle(states[-1])
+#         elif evolve_period[1] == 'response':
+#             angle_e = state_to_angle(np.mean(states, axis=0))
 
-        #### Compute histograms and entropy for start and end states
-        hist_s, _ = np.histogram(angle_s, bins=bin_edges, density=True)
-        hist_e, _ = np.histogram(angle_e, bins=bin_edges, density=True)
-        entropy_s = entropy(hist_s)
-        entropy_e = entropy(hist_e)
+#         #### Compute metric for start and end states
+#         metric_s = compute_metric(angle_s, metric_type=metric_name, bins=bin_edges)
+#         metric_e = compute_metric(angle_e, metric_type=metric_name, bins=bin_edges)
 
-        entropy_start_sig.append(entropy_s)
-        entropy_end_sig.append(entropy_e)
+#         metric_start_sig.append(metric_s)
+#         metric_end_sig.append(metric_e)
 
-        print('Sigma_s={s}, model {i}: entropy_s = {es}, entropy_end = {ee}'.format(s=prior_sig, i=i, es=entropy_s,ee=entropy_e))
+#         print('Sigma_s={s}, model {i}: metric_s = {es}, metric_end = {ee}'.format(
+#             s=prior_sig, i=i, es=metric_s, ee=metric_e))
 
-    # entropy_start_all.append(list(removeOutliers(np.array(entropy_start_sig))))
-    # entropy_end_all.append(list(removeOutliers(np.array(entropy_end_sig))))
-    entropy_start_all.append(entropy_start_sig)
-    entropy_end_all.append(entropy_end_sig)
+#     metric_start_all.append(metric_start_sig)
+#     metric_end_all.append(metric_end_sig)
 
-# TEMP: if you like saving data
-# data = {'entropy_start_all': entropy_start_all, 'entropy_end_all': entropy_end_all, 'sigmas': sigmas}
-# hkl.dump(data, './figs/fig_data/entropy_res_start_end_all.hkl')
+# metric_start_all = np.array(metric_start_all)
+# metric_end_all = np.array(metric_end_all)
 
-# evolve_period = ['go_cue', 'go_cue']
-# evolve_period = ['response', 'response']
-# data_go = hkl.load('./figs/fig_data/entropy_res_start_end_all.hkl')
-# entropy_start_all, entropy_end_all  = data_go['entropy_start_all'], data_go['entropy_end_all']
+# # Save results
+# with open('./figs/fig_data/drift_' + metric_name + '_' + evolve_period[0] + '_sigmas.txt', 'wb') as fp:
+#     pickle.dump((metric_start_all, metric_end_all), fp)
 
-entropy_start_all = np.array(entropy_start_all)
-entropy_end_all = np.array(entropy_end_all)
+# Load data
+with open('./figs/fig_data/drift_' + metric_name + '_' + evolve_period[0] + '_sigmas.txt', 'rb') as fp:
+    metric_start_all, metric_end_all = pickle.load(fp)
 
 ######## Plot the figure
-entropy_start_mean = [np.mean(removeOutliers(entropy_start_all[i])) for i in range(entropy_start_all.shape[0])]
-# entropy_start_ste = list(np.std(entropy_start_all, axis=1) / math.sqrt(entropy_start_all.shape[1]))
-entropy_start_std = [np.std(removeOutliers(entropy_start_all[i])) for i in range(entropy_start_all.shape[0])]
-print(len(entropy_start_mean))
+metric_start_mean, metric_start_std = process_metric_data(metric_start_all, error_type='std')
+metric_end_mean, metric_end_std = process_metric_data(metric_end_all, error_type='std')
 
-entropy_end_mean =[np.mean(removeOutliers(entropy_end_all[i])) for i in range(entropy_end_all.shape[0])]
-# entropy_end_ste = list(np.std(entropy_end_all, axis=1) / math.sqrt(entropy_end_all.shape[1]))
-entropy_end_std = [np.std(removeOutliers(entropy_end_all[i])) for i in range(entropy_end_all.shape[0])]
-print(len(entropy_end_std))
-print(len(sigmas))
-########
-
+# Create plot for start states
 fig = plt.figure(figsize=(3,3))
 bax = brokenaxes(xlims=((0, 35), (85, 95)), hspace=.05)
 
-# bax.plot(sigmas,unadapted_theo_means,'k',linestyle='--',alpha=0.5)
-bax.errorbar(x=sigmas, y=entropy_start_mean,yerr=entropy_start_std,fmt='b.-',linewidth=1.5, markersize=8,label='Start',alpha=1)
-bax.errorbar(x=sigmas, y=entropy_end_mean,yerr=entropy_end_std,fmt='r.-',linewidth=1.5, markersize=8,label='End',alpha=1)
+bax.errorbar(x=sigmas, y=metric_end_mean, yerr=metric_end_std, 
+             fmt='k.-', linewidth=1.5, markersize=8, label='End', alpha=1)
+bax.axhline(y=metric_end_mean[-1], color='k', linestyle='--', alpha=0.5)
 
-bax.set_ylabel('Entropy',fontsize=13)
-bax.set_xlabel(r'$\sigma_s$',fontsize=15)
+# Add shaded error band
+bax.fill_between(sigmas, metric_end_mean[-1] - metric_end_std[-1], metric_end_mean[-1] + metric_end_std[-1],
+                 color='gray', alpha=0.2)
+
+if metric_name == 'entropy':
+    ylabel = 'Entropy'
+else:
+    if evolve_period[0] == 'go_cue':
+        ylabel = 'Coefficient of Variation (CV) of go-end neural states against angles'
+    else:
+        ylabel = 'CV of representative neural states against angles'
+bax.set_ylabel(ylabel, fontsize=13)
+bax.set_xlabel(r'$\sigma_s$', fontsize=15)
 bax.axs[0].set_xticks([10,20,30])
 bax.axs[0].set_xticklabels(['10.0','20.0','30.0'])
 bax.axs[1].set_xticks([90])
 bax.axs[1].set_xticklabels(['90.0'])
 bax.legend(loc='lower right', frameon=False)
-plt.savefig('figs/fig_collect/drift_entropy_'+evolve_period[0]+'_sigmas.svg',format='svg',bbox_inches='tight')
+plt.savefig('figs/fig_collect/drift_' + metric_name + '_' + evolve_period[0] + '_sigmas.svg',
+            format='svg', bbox_inches='tight')
 plt.show()
