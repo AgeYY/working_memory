@@ -75,32 +75,32 @@ def diff_xy(x, y):
     dydx_order = dydx[order]
     return x_order, dydx_order
 
-# ######### Calculation
-# metric_all = []
-# for sigma_s in sigma_s_list:
-#     metric_sig = []
-#     model_dir_parent = '../core/model/model_'+str(sigma_s)+'/color_reproduction_delay_unit/'
+######### Calculation
+metric_all = []
+for sigma_s in sigma_s_list:
+    metric_sig = []
+    model_dir_parent = '../core/model/model_'+str(sigma_s)+'/color_reproduction_delay_unit/'
 
-#     sa = State_analyzer()
-#     for filename in os.listdir(model_dir_parent):
-#         print(sigma_s, filename)
-#         f = os.path.join(model_dir_parent, filename)
-#         sub = Agent(f, rule_name)
-#         sa.read_rnn_agent(sub)
-#         report_color_ring, deg = gen_type_RNN(sub,batch_size=batch_size)
-#         x_delta = report_color_ring
-#         y_delta = deg
-#         x_delta, dydx_delta = diff_xy(x_delta, y_delta)
+    sa = State_analyzer()
+    for filename in os.listdir(model_dir_parent):
+        print(sigma_s, filename)
+        f = os.path.join(model_dir_parent, filename)
+        sub = Agent(f, rule_name)
+        sa.read_rnn_agent(sub)
+        report_color_ring, deg = gen_type_RNN(sub,batch_size=batch_size)
+        x_delta = report_color_ring
+        y_delta = deg
+        x_delta, dydx_delta = diff_xy(x_delta, y_delta)
 
-#         # Compute metric
-#         metric_value = compute_metric(dydx_delta, metric_type=metric_name)
-#         metric_sig.append(metric_value)
+        # Compute metric
+        metric_value = compute_metric(dydx_delta, metric_type=metric_name)
+        metric_sig.append(metric_value)
 
-#     metric_all.append(metric_sig)
+    metric_all.append(metric_sig)
 
-# # Save results
-# with open('./figs/fig_data/AO_' + metric_name + '_' + period_name + '_sigmas.txt', 'wb') as fp:
-#     pickle.dump(metric_all, fp)
+# Save results
+with open('./figs/fig_data/AO_' + metric_name + '_' + period_name + '_sigmas.txt', 'wb') as fp:
+    pickle.dump(metric_all, fp)
 
 ######## Load data and plot the figure
 with open('./figs/fig_data/AO_' + metric_name + '_' + period_name + '_sigmas.txt', 'rb') as fp:

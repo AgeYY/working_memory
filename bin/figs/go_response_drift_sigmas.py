@@ -46,61 +46,61 @@ edge_batch_size = 50 # number of points in each direction
 period_name = 'response' # can be response, of interval PC1-PC2 plane
 evolve_period = ['response', 'response']
 
-# ######## Metric calculation
-# metric_start_all = []
-# metric_end_all = []
+######## Metric calculation
+metric_start_all = []
+metric_end_all = []
 
-# for prior_sig in sigmas:
-#     # file names
-#     adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
-#     metric_start_sig = []
-#     metric_end_sig = []
+for prior_sig in sigmas:
+    # file names
+    adapted_model_dir_parent = "../core/model/model_" + str(prior_sig) + "/color_reproduction_delay_unit/"
+    metric_start_sig = []
+    metric_end_sig = []
 
-#     # Loop over 50 RNNs for each sigma
-#     for i in range(50):
-#         model_dir = 'model_'+str(i)+'/'  # example RNN
-#         model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
+    # Loop over 50 RNNs for each sigma
+    for i in range(50):
+        model_dir = 'model_'+str(i)+'/'  # example RNN
+        model_file = os.path.join(adapted_model_dir_parent, model_dir, sub_dir)
 
-#         ##### Get mesh points in the response PC1-PC2 plane
-#         sub = Agent(model_file, rule_name)
-#         sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x)
+        ##### Get mesh points in the response PC1-PC2 plane
+        sub = Agent(model_file, rule_name)
+        sub.do_exp(prod_intervals=prod_intervals, ring_centers=pca_degree, sigma_rec=sigma_rec, sigma_x=sigma_x)
 
-#         #### Sample grid points in the PCA plane
-#         hhelper = Hidden0_helper(hidden_size=256)
-#         cords_pca, cords_origin = hhelper.delay_ring(sub, period_name=period_name)
+        #### Sample grid points in the PCA plane
+        hhelper = Hidden0_helper(hidden_size=256)
+        cords_pca, cords_origin = hhelper.delay_ring(sub, period_name=period_name)
 
-#         #### Evolve neural states through the specified period
-#         se = State_Evolver()
-#         se.read_rnn_file(model_file, rule_name)
-#         se.set_trial_para(prod_interval=prod_intervals)
-#         states = se.evolve(cords_origin, evolve_period=evolve_period)
+        #### Evolve neural states through the specified period
+        se = State_Evolver()
+        se.read_rnn_file(model_file, rule_name)
+        se.set_trial_para(prod_interval=prod_intervals)
+        states = se.evolve(cords_origin, evolve_period=evolve_period)
 
-#         #### Convert neural states to angles
-#         angle_s = state_to_angle(states[0])
-#         if evolve_period[1] == 'go_cue':
-#             angle_e = state_to_angle(states[-1])
-#         elif evolve_period[1] == 'response':
-#             angle_e = state_to_angle(np.mean(states, axis=0))
+        #### Convert neural states to angles
+        angle_s = state_to_angle(states[0])
+        if evolve_period[1] == 'go_cue':
+            angle_e = state_to_angle(states[-1])
+        elif evolve_period[1] == 'response':
+            angle_e = state_to_angle(np.mean(states, axis=0))
 
-#         #### Compute metric for start and end states
-#         metric_s = compute_metric(angle_s, metric_type=metric_name, bins=bin_edges)
-#         metric_e = compute_metric(angle_e, metric_type=metric_name, bins=bin_edges)
+        #### Compute metric for start and end states
+        metric_s = compute_metric(angle_s, metric_type=metric_name, bins=bin_edges)
+        metric_e = compute_metric(angle_e, metric_type=metric_name, bins=bin_edges)
 
-#         metric_start_sig.append(metric_s)
-#         metric_end_sig.append(metric_e)
+        metric_start_sig.append(metric_s)
+        metric_end_sig.append(metric_e)
 
-#         print('Sigma_s={s}, model {i}: metric_s = {es}, metric_end = {ee}'.format(
-#             s=prior_sig, i=i, es=metric_s, ee=metric_e))
+        print('Sigma_s={s}, model {i}: metric_s = {es}, metric_end = {ee}'.format(
+            s=prior_sig, i=i, es=metric_s, ee=metric_e))
 
-#     metric_start_all.append(metric_start_sig)
-#     metric_end_all.append(metric_end_sig)
+    metric_start_all.append(metric_start_sig)
+    metric_end_all.append(metric_end_sig)
 
-# metric_start_all = np.array(metric_start_all)
-# metric_end_all = np.array(metric_end_all)
+metric_start_all = np.array(metric_start_all)
+metric_end_all = np.array(metric_end_all)
 
-# # Save results
-# with open('./figs/fig_data/drift_' + metric_name + '_' + evolve_period[0] + '_sigmas.txt', 'wb') as fp:
-#     pickle.dump((metric_start_all, metric_end_all), fp)
+# Save results
+with open('./figs/fig_data/drift_' + metric_name + '_' + evolve_period[0] + '_sigmas.txt', 'wb') as fp:
+    pickle.dump((metric_start_all, metric_end_all), fp)
 
 # Load data
 with open('./figs/fig_data/drift_' + metric_name + '_' + evolve_period[0] + '_sigmas.txt', 'rb') as fp:
