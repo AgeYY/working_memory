@@ -1,4 +1,5 @@
 import context
+from scipy.stats import ranksums
 import numpy as np
 from brokenaxes import brokenaxes
 import os
@@ -91,7 +92,21 @@ if __name__ == "__main__":
     plt.xticks(rotation=45)
     plt.savefig('./figs/fig_collect/ablation_analysis.svg', dpi=300)
 
+    # statistical analysis comparing 3.0 to 90.0
+    go_compare = data[1][0], data[1][-1]
+    go_stat, go_pval = ranksums(data[1][0], data[1][-1], alternative='less')
+    print(f"Go dynamics: Wilcoxon rank-sum test statistic = {go_stat:.3f}, p-value = {go_pval:.3e}")
 
+    response_compare = data[2][0], data[2][-1]
+    response_stat, response_pval = ranksums(data[2][0], data[2][-1], alternative='less')
+    print(f"Response dynamics: Wilcoxon rank-sum test statistic = {response_stat:.3f}, p-value = {response_pval:.3e}")
+
+    readout_compare = data[3][0], data[3][-1]
+    readout_stat, readout_pval = ranksums(data[3][0], data[3][-1], alternative='less')
+    print(f"Readout: Wilcoxon rank-sum test statistic = {readout_stat:.3f}, p-value = {readout_pval:.3e}")
+
+
+    # plot all sigmas
     metric_go_mean, metric_go_std = process_metric_data(data[1], error_type='std')
     # metric_go_mean = np.array(metric_go_mean) - metric_go_mean[-1]  # subtract the last element
     metric_response_mean, metric_response_std = process_metric_data(data[2], error_type='std')
