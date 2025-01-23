@@ -8,22 +8,13 @@ from core.agent import Agent, Agent_group
 import sys
 
 rule_name = 'color_reproduction_delay_unit'
-model_dir = '../core/model/model_90.0/color_reproduction_delay_unit/'
+model_dir = '../core/model/model_25.0/color_reproduction_delay_unit/'
 sub_dir = '/noise_delta'
 
-prod_int_short = 1000
-batch_size = 1000
-sigma_rec = None; sigma_x = None # set the noise to be default (training value)
-
-#### Generate data
-group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
-group.do_batch_exp(prod_intervals=prod_int_short, sigma_rec=sigma_rec, batch_size=batch_size, sigma_x=sigma_x)
-dire_df_short = pd.DataFrame(group.group_behaviour)
-
-diff_color = np.array(dire_df_short['error_color'])
-# reshape to 2D array
-diff_color = diff_color.reshape(len(group.group), -1)
-print(diff_color.shape)
+# prod_int_shorts = np.arange(0, 1100, 100)  # include 1000
+prod_int_shorts = np.arange(100, 1200, 200)  # include 1000
+batch_size = 500
+sigma_rec = None; sigma_x = None
 
 def removeOutliers(a, outlierConstant=1.5):
     upper_quartile = np.percentile(a, 75)
@@ -32,14 +23,39 @@ def removeOutliers(a, outlierConstant=1.5):
     quartileSet = (lower_quartile - IQR, upper_quartile + IQR)
     return a[np.where((a >= quartileSet[0]) & (a <= quartileSet[1]))]
 
-# Remove outliers row by row
-diff_color_clean = np.array([removeOutliers(row) for row in diff_color])
+# Lists to store results
+error_means = []
+error_stds = []
 
-error_color = []
-for i in range(len(diff_color_clean)):
-    error_color.append(np.std(diff_color_clean[i]))
+#### Generate data for each production interval
+group = Agent_group(model_dir, rule_name, sub_dir=sub_dir)
 
-error_color_mean = np.mean(error_color)
-error_color_std = np.std(error_color)
-print(error_color_mean)
-print(error_color_std)
+for prod_int in prod_int_shorts:
+    group.do_batch_exp(prod_intervals=prod_int, sigma_rec=sigma_rec, batch_size=batch_size, sigma_x=sigma_x)
+    dire_df = pd.DataFrame(group.group_behaviour)
+    
+    diff_color = np.array(dire_df['error_color'])
+    diff_color = diff_color.reshape(len(group.group), -1)
+    
+    # Remove outliers row by row
+    diff_color_clean = np.array([removeOutliers(row) for row in diff_color])
+    
+    # Calculate std for each network
+    error_color = [np.sqrt(np.mean(row**2)) for row in diff_color_clean]
+    
+    error_means.append(np.mean(error_color))
+    error_stds.append(np.std(error_color))
+
+# Plot results
+plt.figure(figsize=(6, 4))
+plt.errorbar(prod_int_shorts, error_means, yerr=error_stds, fmt='o-', capsize=5, color='black')
+plt.xlabel('Delay (ms)')
+plt.ylabel('Memory error (degree)')
+
+# Save the plot
+plt.savefig('./figs/fig_collect/error_vs_interval.pdf', format='pdf', bbox_inches='tight')
+
+# Print numerical results
+for interval, mean, std in zip(prod_int_shorts, error_means, error_stds):
+    print(f"Interval: {interval}ms, Mean Error: {mean:.2f}°, Std: {std:.2f}°")
+plt.show()
