@@ -3,7 +3,7 @@ from core.tools import removeOutliers
 import scipy.stats as sci_st
 import numpy as np
 
-def plot_layer_boxplot_helper(score_exps, layer_order, color="#747473", ax=None, fig=None, patch_artist=False, jitter=0.04, jitter_s=50, jitter_alpha=0.4, jitter_color='#1f77b4', show_outlier=True, **box_kwarg):
+def plot_layer_boxplot_helper(score_exps, layer_order, color="#747473", ax=None, fig=None, patch_artist=False, jitter=0.04, jitter_s=50, jitter_alpha=0.4, jitter_color='#1f77b4', show_outlier=True, show_box=True, **box_kwarg):
     '''
     score_exps (dict): {layer_name1: [list_of_score], layer_name2: [list_of_score], ...}
     layer_order (dict): {layer_name1: 0, layer_name2: 0, ...}. A dict uses layer name as key and the order as value
@@ -45,7 +45,8 @@ def plot_layer_boxplot_helper(score_exps, layer_order, color="#747473", ax=None,
     box_kwarg_default = {'positions': lo_order_id, 'showfliers': False, 'showcaps': False, 'medianprops': medianprops, 'whiskerprops': whisprops, 'boxprops': boxprops, 'patch_artist': patch_artist}
     box_kwarg.update(box_kwarg_default)
 
-    ax.boxplot(score_list, **box_kwarg)
+    if show_box:
+        ax.boxplot(score_list, **box_kwarg)
 
     if not show_outlier:
         score_list = [removeOutliers(np.array(v)) for v in score_list]

@@ -1,5 +1,6 @@
 # color error related calculation. Unit of color is degree
 import numpy as np
+from core.tools import removeOutliers
 
 class Color_error():
     def add_data(self, output_color, target_color):
@@ -52,3 +53,32 @@ class Circular_operator():
 
     def shift_c_min(self, x):
         return x + self.c_min
+        
+def circular_difference(angle1, angle2, max_angle=360):
+    """
+    Calculate the circular difference between two angles.
+    """
+    diff = (angle1 - angle2) % max_angle  # Difference in circular space
+    diff = np.where(diff > max_angle / 2, diff - max_angle, diff)  # Ensure result is in [-max_angle/2, max_angle/2]
+    return diff
+
+def circular_mse(angle1, angle2, max_angle=360, remove_outliers=False):
+    """
+    Calculate mean squared error accounting for circular nature of angles.
+    
+    Parameters:
+        angle1, angle2: Arrays of angles to compare
+        max_angle: Maximum angle value (default 360 for degrees)
+        
+    Returns:
+        Mean squared error between the angles accounting for circularity
+    """
+    diff = circular_difference(angle1, angle2, max_angle)
+    if remove_outliers:
+        diff = removeOutliers(diff)
+    return np.mean(np.square(diff))
+
+def memory_rmse(angle1, angle2, max_angle=360):
+    mse = circular_mse(angle1, angle2, max_angle)
+    return np.sqrt(mse)
+
