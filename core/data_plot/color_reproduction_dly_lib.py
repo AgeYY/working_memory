@@ -180,22 +180,39 @@ def bias_around_common(out_color, target_color, common_color):
     '''
     Bias around common color
     Input:
-      out_color (np.array [float] [n]): the reported color.
-      target_color (np.array [float] [n]): the target color. Note the index must the same with out_color.
+      out_color (np.array [float] [batch_size, n] or [n]): the reported color.
+      target_color (np.array [float] [batch_size, n] or [n]): the target color. Note the index must the same with out_color.
       common_color (list [float] [m]): the whole color space (360 deegree) is evenly divided by common colors. Such as [0, 60, 120, 180, 240, 300] or [20, 110, 200, 290]
     Output:
-      target_common_color (np.array [float] n): The target color but scaled into the interval (-width, +width), where 2 * width = 360 / m.
-      bias (np.array [float] n): out_color - target_color
+      target_common_color (np.array [float] [batch_size, n] or [n]): The target color but scaled into the interval (-width, +width), where 2 * width = 360 / m.
+      bias (np.array [float] [batch_size, n] or [n]): out_color - target_color
     '''
     width = 360 / len(common_color)
 
+    # Handle both 1D and 2D inputs
+    out_color = np.array(out_color)
+    target_color = np.array(target_color)
+    original_shape = out_color.shape
+    
+    # Reshape to 2D if input is 1D
+    if len(out_color.shape) == 1:
+        out_color = out_color.reshape(1, -1)
+        target_color = target_color.reshape(1, -1)
+
     # calculate the error
     color_error = Color_error()
-    color_error.add_data(out_color, target_color)
+    color_error.add_data(out_color.flatten(), target_color.flatten())
     bias = color_error.calculate_error()
+    bias = bias.reshape(out_color.shape)
 
-    target_common_color = target_color - common_color[0] + width / 2 # shift the first common color to 0
+    target_common_color = target_color - common_color[0] + width / 2 # shift the first common color to width / 2
     target_common_color = target_common_color % width - width / 2
+
+    # Restore original shape if input was 1D
+    if len(original_shape) == 1:
+        target_common_color = target_common_color.flatten()
+        bias = bias.flatten()
+
     return target_common_color, bias
 
 def PCA_3d_plot(model_dir, rule_name, prod_intervals=np.array([1200]), epoch='interval', noise_on=False, ring_centers = np.array([6., 12., 18., 24.]), colors=None, is_cuda=False):
