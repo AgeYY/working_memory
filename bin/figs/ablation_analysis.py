@@ -37,7 +37,7 @@ def main():
     with open('./figs/fig_data/ablation_analysis.txt', 'wb') as fp:
         pickle.dump((rmse_no_post_delay_sigma, rmse_go_dynamics_sigma, rmse_response_dynamics_sigma, rmse_readout_sigma, rmse_full_sigma), fp)
 
-def plot_one_sigma(data, sigma_s_idx, jitter_color=None, fig=None, ax=None):
+def plot_one_sigma(data, sigma_s_idx, jitter_color="grey", fig=None, ax=None):
     rmse_no_post_delay_sigma = data[0]
     rmse_go_dynamics_sigma = data[1]
     rmse_response_dynamics_sigma = data[2]
@@ -58,11 +58,6 @@ def plot_one_sigma(data, sigma_s_idx, jitter_color=None, fig=None, ax=None):
         # 'full': 3
     }
 
-    if jitter_color is None:
-        jitter_color = {'go dynamics': 'tab:blue', 'response dynamics': 'tab:red', 'readout': 'tab:green', 'full': 'tab:orange'}
-    else:
-        jitter_color = 'grey'
-
     plot_layer_boxplot_helper(score_dict, layer_order, ax=ax, jitter_color=jitter_color, fig=fig, show_outlier=False)
     return fig, ax
 
@@ -70,18 +65,19 @@ if __name__ == "__main__":
     common_color = 130
     delta_angle = 10
     n_models = 50
-    sigma_s_list = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
+    # sigma_s_list = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]
+    sigma_s_list = [3.0, 90.0]
     model_file_func = lambda sigma_s, i: "../core/model/model_" + str(sigma_s) + "/color_reproduction_delay_unit/" + f"model_{i}/"
     rule_name = 'color_reproduction_delay_unit'
 
-    # main()
+    main()
 
     with open('./figs/fig_data/ablation_analysis.txt', 'rb') as fp:
         data = pickle.load(fp)
 
     fig, ax = plt.subplots(1, 1, figsize=(3, 3))
 
-    plot_one_sigma(data, 0, fig=fig, ax=ax)
+    plot_one_sigma(data, 0, jitter_color="tab:blue", fig=fig, ax=ax)
     plot_one_sigma(data, -1, jitter_color='grey', fig=fig, ax=ax)
 
     uniform_concatenate = np.concatenate([data[1][-1], data[2][-1], data[3][-1]], axis=0).flatten()
