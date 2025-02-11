@@ -235,33 +235,33 @@ mse_bias_bias = []  # biased delay and decode
 mse_uni_bias = []  # uniform delay and biased decode
 mse_bias_uni = []  # biased delay and uniform decode
 
-for k in range(n_sampling):
-    print(k)
-    model_1, model_2 = random.sample(list(np.arange(50)),2)
-    mse_uni_uni.append(cross_decoding(uniform_sigma, uniform_sigma, model_1, model_2))
-    mse_bias_bias.append(cross_decoding(biased_sigma, biased_sigma, model_1, model_2))
-    mse_uni_bias.append(cross_decoding(uniform_sigma, biased_sigma, model_1, model_2))
-    mse_bias_uni.append(cross_decoding(biased_sigma, uniform_sigma, model_1, model_2))
+# for k in range(n_sampling):
+#     print(k)
+#     model_1, model_2 = random.sample(list(np.arange(50)),2)
+#     mse_uni_uni.append(cross_decoding(uniform_sigma, uniform_sigma, model_1, model_2))
+#     mse_bias_bias.append(cross_decoding(biased_sigma, biased_sigma, model_1, model_2))
+#     mse_uni_bias.append(cross_decoding(uniform_sigma, biased_sigma, model_1, model_2))
+#     mse_bias_uni.append(cross_decoding(biased_sigma, uniform_sigma, model_1, model_2))
 
 
-score_exps = {'biased delay state\n&\nbiased decoding': mse_bias_bias,
-              'uniform delay state\n&\nbiased decoding': mse_uni_bias,
-              'biased delay state\n&\nuniform decoding': mse_bias_uni,
-              'uniform delay state\n&\nuniform decoding': mse_uni_uni}
-layer_order = {'biased delay state\n&\nbiased decoding': 0,
-              'uniform delay state\n&\nbiased decoding': 1,
-              'biased delay state\n&\nuniform decoding': 2,
-              'uniform delay state\n&\nuniform decoding': 3}
-data = {'score_exps': score_exps, 'layer_order': layer_order}
-with open('../bin/figs/fig_data/cross_decoding.pkl', 'wb') as f:
-    pickle.dump(data, f)
+# score_exps = {'biased delay state\n&\nbiased decoding': mse_bias_bias,
+#               'uniform delay state\n&\nbiased decoding': mse_uni_bias,
+#               'biased delay state\n&\nuniform decoding': mse_bias_uni,
+#               'uniform delay state\n&\nuniform decoding': mse_uni_uni}
+# layer_order = {'biased delay state\n&\nbiased decoding': 0,
+#               'uniform delay state\n&\nbiased decoding': 1,
+#               'biased delay state\n&\nuniform decoding': 2,
+#               'uniform delay state\n&\nuniform decoding': 3}
+# data = {'score_exps': score_exps, 'layer_order': layer_order}
+# with open('../bin/figs/fig_data/cross_decoding.pkl', 'wb') as f:
+#     pickle.dump(data, f)
 
 with open('../bin/figs/fig_data/cross_decoding.pkl', 'rb') as f:
     data = pickle.load(f)
 score_exps = data['score_exps']; layer_order = data['layer_order']
 
 fig, ax = plt.subplots(figsize=(3.2, 3.2))
-fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, ax=ax, fig=fig, show_outlier=False, jitter_s=20)
+fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, ax=ax, fig=fig, show_outlier=True, jitter_s=20, jitter_color='grey')
 ax.set_xticks([0, 1, 2, 3])
 ax.set_xticklabels(['Bias\n&\nBias', 'Uniform\n&\nBias', 'Bias\n&\nUniform', 'Uniform\n&\nUniform'])
 ax.set_ylabel('Memory Error (color degree) \n input = common color')

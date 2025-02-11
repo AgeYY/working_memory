@@ -164,7 +164,7 @@ score_exps = data['score_exps']; layer_order = data['layer_order']
 
 # Plot cross-decoding results as a box plot
 fig, ax = plt.subplots(figsize=(3.2, 3.2))
-fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, ax=ax, fig=fig, show_outlier=False, jitter_s=20, jitter_color='grey')
+fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, ax=ax, fig=fig, show_outlier=True, jitter_s=20, jitter_color='grey')
 ax.set_xticks([0, 1, 2, 3])
 ax.set_xticklabels(['Bias\n&\nBias', 'Uniform\n&\nBias', 'Bias\n&\nUniform', 'Uniform\n&\nUniform'])
 ax.set_ylabel('Memory Error (color degree) \n input = common color')

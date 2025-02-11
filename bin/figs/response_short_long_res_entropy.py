@@ -91,7 +91,7 @@ entropy_short = AO_metric('../core/model_short_res_40', sigma_s=3.0, period_name
 score_exps = {'Long': entropy_ori,'Short': entropy_short}
 layer_order = {'Long': 0,'Short': 1}
 fig, ax = plt.subplots(figsize=(3, 3))
-fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_color='tab:red', jitter_s=30, show_outlier=False)
+fig, ax = plot_layer_boxplot_helper(score_exps,layer_order, fig=fig, ax=ax, jitter_color='tab:red', jitter_s=30, show_outlier=True)
 ax.set_ylabel(metric_name + ' of \n the representative neural states')
 fig.tight_layout()
 fig.savefig('../bin/figs/fig_collect/long_short_response_'+metric_name+'_'+period_name+'.svg',format='svg',bbox_inches='tight')

@@ -58,7 +58,7 @@ def plot_one_sigma(data, sigma_s_idx, jitter_color="grey", fig=None, ax=None):
         # 'full': 3
     }
 
-    plot_layer_boxplot_helper(score_dict, layer_order, ax=ax, jitter_color=jitter_color, fig=fig, show_outlier=False)
+    plot_layer_boxplot_helper(score_dict, layer_order, ax=ax, jitter_color=jitter_color, fig=fig, show_outlier=True)
     return fig, ax
 
 if __name__ == "__main__":
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     model_file_func = lambda sigma_s, i: "../core/model/model_" + str(sigma_s) + "/color_reproduction_delay_unit/" + f"model_{i}/"
     rule_name = 'color_reproduction_delay_unit'
 
-    main()
+    # main() # uncomment to run the ablation analysis
 
     with open('./figs/fig_data/ablation_analysis.txt', 'rb') as fp:
         data = pickle.load(fp)

@@ -82,7 +82,8 @@ def color_mse(input_color,f,prior_sig,batch_size=5000):
 
 # Calculate memory errors for Biased and Uniform RNNs across various prior distributions
 # '''
-sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]  # Prior distribution sigmas.
+# sigmas = [3.0, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 90.0]  # Prior distribution sigmas.
+sigmas = [12.5]  # Prior distribution sigmas.
 model_names = [str(s) for s in sigmas]
 
 error_adapted = []  # Errors for Biased (adapted) RNNs.
@@ -101,10 +102,10 @@ for prior_sig in sigmas:
         unadapted_file = os.path.join(unadapted_model_dir_parent, model_dir, sub_dir)
 
         # Calculate memory errors for common input colors
-        # adapted_mse = color_mse('random', f=adapted_file, prior_sig=prior_sig)
-        # unadapted_mse = color_mse('random', f=unadapted_file, prior_sig=prior_sig)
-        adapted_mse = color_mse('common', f=adapted_file, prior_sig=prior_sig)
-        unadapted_mse = color_mse('common', f=unadapted_file, prior_sig=prior_sig)
+        adapted_mse = color_mse('random', f=adapted_file, prior_sig=prior_sig)
+        unadapted_mse = color_mse('random', f=unadapted_file, prior_sig=prior_sig)
+        # adapted_mse = color_mse('common', f=adapted_file, prior_sig=prior_sig)
+        # unadapted_mse = color_mse('common', f=unadapted_file, prior_sig=prior_sig)
 
         error_adapted_sig.append(adapted_mse)
         error_unadapted_sig.append(unadapted_mse)
@@ -125,8 +126,8 @@ with open('../bin/figs/fig_data/mse_adapted.txt', 'rb') as fp:
 with open('../bin/figs/fig_data/mse_unadapted.txt', 'rb') as fp:
     error_unadapted = np.array(pickle.load(fp))
 
-e_adapted = list(np.sqrt(error_adapted[2])) # sigma = 12.5 (third one)
-e_unadapted = list(np.sqrt(error_unadapted[2])) # sigma = 12.5
+e_adapted = list(np.sqrt(error_adapted[0])) # sigma = 12.5 (third one)
+e_unadapted = list(np.sqrt(error_unadapted[0])) # sigma = 12.5
 
 # # Perform statistical test (Mann-Whitney U-test)
 U1, pvalue = mannwhitneyu(e_adapted, e_unadapted, method="exact")
@@ -140,13 +141,15 @@ formatted_pvalues = f'p={pvalue:.2e}'
 
 #################### Plot data
 # Remove outliers for plotting
-e_unadapted, e_adapted = removeOutliers(np.array(e_unadapted)), removeOutliers(np.array(e_adapted))
 
 data = {'Uniform RNN': e_unadapted, 'Biased RNN': e_adapted}
 layer_order = {key: i for i, key in enumerate(data)}
 jitter_color_order = {'Biased RNN': '#d62728', 'Uniform RNN': '#1f77b4'}
 
-fig, ax = plot_layer_boxplot_helper(data, layer_order, jitter_color=jitter_color_order)
+fig, ax = plot_layer_boxplot_helper(data, layer_order, jitter_color=jitter_color_order, show_outlier=True)
+ax.tick_params(axis='both', which='major', labelsize=14)
+ax.set_xticklabels(ax.get_xticklabels(), fontsize=14)
+ax.set_yticklabels(ax.get_yticklabels(), fontsize=14)
 
 plt.savefig('../bin/figs/fig_collect/Figure_1D.svg',format='svg',bbox_inches='tight')
 
